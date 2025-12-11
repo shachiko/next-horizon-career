@@ -61,7 +61,7 @@ elif os.path.exists("background.png"):
     set_background("background.png")
 
 
-# --- 2. CSS GIAO DIỆN (ĐÃ TỐI ƯU CỰC ĐẠI KHOẢNG CÁCH - FIX LỖI CHE CHỮ) ---
+# --- 2. CSS GIAO DIỆN (ĐÃ TỐI ƯU CỰC ĐẠI & ẨN FOOTER STREAMLIT) ---
 st.markdown("""
 <style>
     /* Import Font hiện đại */
@@ -70,6 +70,16 @@ st.markdown("""
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
     }
+
+    /* --- ẨN CÁC THÀNH PHẦN MẶC ĐỊNH CỦA STREAMLIT (QUAN TRỌNG) --- */
+    #MainMenu {display: none !important;}
+    footer {display: none !important;}
+    header {display: none !important;}
+    
+    /* Ẩn thanh toolbar chế độ embed (dòng Built with Streamlit) */
+    .stApp > header {display: none !important;}
+    [data-testid="stToolbar"] {display: none !important;}
+    .viewerBadge_container__1QSob {display: none !important;}
 
     /* --- TỐI ƯU KHOẢNG TRỐNG TOÀN TRANG --- */
     /* Kéo sát lề trên cùng nhưng vẫn giữ khoảng cách an toàn */
