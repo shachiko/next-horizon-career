@@ -61,7 +61,7 @@ elif os.path.exists("background.png"):
     set_background("background.png")
 
 
-# --- 2. CSS GIAO DIỆN (ĐÃ TỐI ƯU CỰC ĐẠI & ẨN FOOTER STREAMLIT) ---
+# --- 2. CSS GIAO DIỆN (ĐÃ TỐI ƯU CỰC ĐẠI - FIX LỖI CHE CHỮ & ẨN FULLSCREEN) ---
 st.markdown("""
 <style>
     /* Import Font hiện đại */
@@ -70,18 +70,35 @@ st.markdown("""
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
     }
-
-    /* --- ẨN CÁC THÀNH PHẦN MẶC ĐỊNH CỦA STREAMLIT (QUAN TRỌNG) --- */
-    #MainMenu {display: none !important;}
-    footer {display: none !important;}
-    header {display: none !important;}
     
-    /* Ẩn thanh toolbar chế độ embed (dòng Built with Streamlit) */
+    /* =========================================
+       ẨN CÁC THÀNH PHẦN MẶC ĐỊNH CỦA STREAMLIT
+       (Xử lý triệt để Footer, Header, Fullscreen)
+       ========================================= */
+    
+    /* Ẩn Main Menu (3 dấu gạch/chấm ở góc phải trên) */
+    #MainMenu {visibility: hidden; display: none !important;}
+    
+    /* Ẩn Footer mặc định "Made with Streamlit" */
+    footer {visibility: hidden; display: none !important;}
+    
+    /* Ẩn Header trang trí (thanh màu) */
+    header {visibility: hidden; display: none !important;}
+    
+    /* Ẩn thanh Toolbar (nơi chứa nút Fullscreen, Record...) */
+    [data-testid="stToolbar"] {visibility: hidden; display: none !important;}
+    
+    /* Ẩn nút Fullscreen cụ thể (nếu nó hiện riêng lẻ) */
+    button[title="View fullscreen"] {visibility: hidden; display: none !important;}
+    
+    /* Ẩn Decoration Header của App */
     .stApp > header {display: none !important;}
-    [data-testid="stToolbar"] {display: none !important;}
-    .viewerBadge_container__1QSob {display: none !important;}
 
-    /* --- TỐI ƯU KHOẢNG TRỐNG TOÀN TRANG --- */
+
+    /* =========================================
+       TỐI ƯU KHOẢNG TRỐNG TOÀN TRANG
+       ========================================= */
+
     /* Kéo sát lề trên cùng nhưng vẫn giữ khoảng cách an toàn */
     .block-container {
         padding-top: 1.5rem !important; /* Tăng nhẹ để không bị dính mép trên */
