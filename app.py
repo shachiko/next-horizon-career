@@ -72,27 +72,54 @@ st.markdown("""
     }
     
     /* =========================================
-       ẨN CÁC THÀNH PHẦN MẶC ĐỊNH CỦA STREAMLIT
-       (Xử lý triệt để Footer, Header, Fullscreen)
+       ẨN TUYỆT ĐỐI CÁC THÀNH PHẦN MẶC ĐỊNH CỦA STREAMLIT
+       (Header, Footer, Toolbar, Menu, Fullscreen)
        ========================================= */
     
-    /* Ẩn Main Menu (3 dấu gạch/chấm ở góc phải trên) */
-    #MainMenu {visibility: hidden; display: none !important;}
+    /* 1. Ẩn thanh Header trên cùng (Nơi có nút 3 chấm và Deploy) */
+    header[data-testid="stHeader"] {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+    }
     
-    /* Ẩn Footer mặc định "Made with Streamlit" */
-    footer {visibility: hidden; display: none !important;}
+    /* 2. Ẩn Footer mặc định "Made with Streamlit" */
+    footer {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+    }
     
-    /* Ẩn Header trang trí (thanh màu) */
-    header {visibility: hidden; display: none !important;}
+    /* 3. Ẩn Main Menu (3 dấu gạch/chấm ở góc phải trên) */
+    #MainMenu {
+        display: none !important;
+        visibility: hidden !important;
+    }
     
-    /* Ẩn thanh Toolbar (nơi chứa nút Fullscreen, Record...) */
-    [data-testid="stToolbar"] {visibility: hidden; display: none !important;}
+    /* 4. Ẩn thanh Toolbar (nơi chứa các nút tác vụ nhanh) */
+    [data-testid="stToolbar"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
     
-    /* Ẩn nút Fullscreen cụ thể (nếu nó hiện riêng lẻ) */
-    button[title="View fullscreen"] {visibility: hidden; display: none !important;}
+    /* 5. Ẩn đường viền trang trí mặc định trên cùng */
+    div[data-testid="stDecoration"] {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0px !important;
+    }
+
+    /* 6. Ẩn nút "View fullscreen" thường hiện khi rê chuột vào ảnh */
+    button[title="View fullscreen"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
     
-    /* Ẩn Decoration Header của App */
-    .stApp > header {display: none !important;}
+    /* 7. Ẩn nút Deploy nếu còn sót */
+    .stDeployButton {
+        display: none !important;
+        visibility: hidden !important;
+    }
 
 
     /* =========================================
