@@ -428,7 +428,7 @@ elif st.session_state.page == 'welcome':
         st.info("🧩 **Trắc nghiệm Holland**\n\nTìm ra nhóm sở thích nghề nghiệp phù hợp nhất với bạn.")
         if st.button("Bắt đầu Holland", key="wc_h"): switch_page('holland')
     with r1c2:
-        st.warning("🎯 **Khám phá IKIGAI**\n\nTìm điểm giao thoa của Đam mê, Kỹ năng và Nhu cầu xã hội.")
+        st.warning("🎯 :red[**Khám phá IKIGAI**]\n\n:red[Tìm điểm giao thoa của Đam mê, Kỹ năng và Nhu cầu xã hội.]")
         if st.button("Bắt đầu IKIGAI", key="wc_i"): switch_page('ikigai')
 
     # Hàng 2
@@ -1013,3 +1013,4 @@ elif st.session_state.page == 'expert':
 # --- FOOTER ---
 st.markdown("---")
 st.markdown("""<div class='footer'>@2025 sản phẩm thuộc về Câu lạc bộ hướng nghiệp Next Horizon - UK Academy Hạ Long</div>""", unsafe_allow_html=True)
+
