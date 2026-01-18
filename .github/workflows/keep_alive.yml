@@ -1,0 +1,26 @@
+name: Keep Streamlit App Alive
+
+# Thiết lập thời gian chạy tự động
+on:
+  schedule:
+    # Chạy mỗi 60 phút (Tại phút thứ 0 của mỗi giờ)
+    # Ping 1 tiếng/lần an toàn hơn 4 tiếng để tránh app bị ngủ sâu
+    - cron: '0 * * * *'
+  
+  # Cho phép bấm nút chạy thủ công để test thử ngay lập tức
+  workflow_dispatch:
+
+jobs:
+  ping_app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code (Optional)
+        uses: actions/checkout@v3
+
+      - name: Ping the Streamlit App
+        run: |
+          # Dùng lệnh curl để gửi tín hiệu đến web
+          # QUAN TRỌNG: Thay link bên dưới bằng link app của bạn
+          curl -I https://nexthorizon-ukhalong.streamlit.app/
+          
+          echo "Đã ping thành công - Web vẫn sống!"
