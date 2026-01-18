@@ -12,7 +12,7 @@ st.set_page_config(
     page_title="Next Horizon - Hướng nghiệp",
     page_icon="🚀",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="auto" # Để auto để trên mobile nó tự ẩn gọn gàng
 )
 
 # --- HÀM XỬ LÝ HÌNH NỀN (BACKGROUND) ---
@@ -37,16 +37,15 @@ def set_background(png_file):
         
         /* Làm mờ nền trắng của các container để lộ background đẹp hơn */
         .block-container {{
-            background-color: rgba(255, 255, 255, 0.92); /* Tăng độ mờ lên chút để dễ đọc chữ */
+            background-color: rgba(255, 255, 255, 0.95); /* Tăng độ mờ lên 0.95 cho dễ đọc trên mobile */
             border-radius: 15px;
-            padding: 1.5rem !important; /* Padding chuẩn */
-            margin-top: 1rem;
-            margin-bottom: 1rem;
+            padding: 1rem !important; /* Padding nhỏ hơn cho mobile */
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
         }}
         
-        /* Sidebar cũng cần làm mờ */
         section[data-testid="stSidebar"] {{
-            background-color: rgba(240, 242, 246, 0.9); /* Màu xám nhạt mờ */
+            background-color: rgba(240, 242, 246, 0.95);
         }}
         </style>
         """
@@ -61,142 +60,72 @@ elif os.path.exists("background.png"):
     set_background("background.png")
 
 
-# --- 2. CSS GIAO DIỆN (ĐÃ TỐI ƯU CỰC ĐẠI - FIX LỖI CHE CHỮ & ẨN FULLSCREEN) ---
+# --- 2. CSS GIAO DIỆN (MOBILE FIRST OPTIMIZATION) ---
 st.markdown("""
 <style>
-    /* Import Font hiện đại */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
 
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
     }
     
-    /* =========================================
-       ẨN TUYỆT ĐỐI CÁC THÀNH PHẦN MẶC ĐỊNH CỦA STREAMLIT
-       (Header, Footer, Toolbar, Menu, Fullscreen)
-       ========================================= */
-    
-    /* 1. Ẩn thanh Header trên cùng (Nơi có nút 3 chấm và Deploy) */
-    header[data-testid="stHeader"] {
+    /* ẨN CÁC THÀNH PHẦN KHÔNG CẦN THIẾT */
+    header[data-testid="stHeader"], footer, #MainMenu, [data-testid="stToolbar"], div[data-testid="stDecoration"] {
         display: none !important;
-        visibility: hidden !important;
         height: 0px !important;
     }
-    
-    /* 2. Ẩn Footer mặc định "Made with Streamlit" */
-    footer {
-        display: none !important;
-        visibility: hidden !important;
-        height: 0px !important;
-    }
-    
-    /* 3. Ẩn Main Menu (3 dấu gạch/chấm ở góc phải trên) */
-    #MainMenu {
-        display: none !important;
-        visibility: hidden !important;
-    }
-    
-    /* 4. Ẩn thanh Toolbar (nơi chứa các nút tác vụ nhanh) */
-    [data-testid="stToolbar"] {
-        display: none !important;
-        visibility: hidden !important;
-    }
-    
-    /* 5. Ẩn đường viền trang trí mặc định trên cùng */
-    div[data-testid="stDecoration"] {
-        display: none !important;
-        visibility: hidden !important;
-        height: 0px !important;
-    }
+    button[title="View fullscreen"] { display: none !important; }
+    .stDeployButton { display: none !important; }
 
-    /* 6. Ẩn nút "View fullscreen" thường hiện khi rê chuột vào ảnh */
-    button[title="View fullscreen"] {
-        display: none !important;
-        visibility: hidden !important;
-    }
-    
-    /* 7. Ẩn nút Deploy nếu còn sót */
-    .stDeployButton {
-        display: none !important;
-        visibility: hidden !important;
-    }
-
-
-    /* =========================================
-       TỐI ƯU KHOẢNG TRỐNG TOÀN TRANG
-       ========================================= */
-
-    /* Kéo sát lề trên cùng nhưng vẫn giữ khoảng cách an toàn */
+    /* TỐI ƯU KHOẢNG TRỐNG */
     .block-container {
-        padding-top: 1.5rem !important; /* Tăng nhẹ để không bị dính mép trên */
-        padding-bottom: 0.5rem !important; /* Giảm tối đa lề dưới */
+        padding-top: 1rem !important;
+        padding-bottom: 2rem !important;
         max-width: 100%;
     }
 
-    /* --- PHẦN TIÊU ĐỀ CHÍNH (MAIN AREA) --- */
+    /* --- TYPOGRAPHY RESPONSIVE --- */
     .main-header {
-        font-size: 3rem !important; 
+        font-size: 2.2rem !important; /* Mặc định nhỏ hơn xíu */
         font-weight: 900 !important; 
         background: -webkit-linear-gradient(45deg, #004A8D, #0088cc);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-align: center; 
-        margin-top: -20px !important; /* Giảm độ kéo lên để không bị che chữ */
+        margin-top: -10px !important;
         margin-bottom: 0rem !important;
         line-height: 1.2;
         text-transform: uppercase;
-        letter-spacing: -1px;
     }
     
     .sub-header {
-        font-size: 1.2rem !important; 
+        font-size: 1rem !important; 
         font-weight: 700 !important;
         color: #555 !important; 
         text-align: center; 
-        margin-top: 0 !important; 
-        margin-bottom: 15px !important; /* Thu hẹp khoảng cách với nút bấm */
-    }
-    
-    /* --- SIDEBAR (THANH BÊN) --- */
-    
-    /* Tiêu đề Sidebar */
-    .sidebar-title {
-        font-size: 1.5rem !important;
-        font-weight: 800 !important;
-        color: #004A8D !important;
-        text-align: center !important;
-        margin-bottom: 0.5rem !important;
-        margin-top: 0 !important;
+        margin-bottom: 15px !important;
     }
 
-    /* Chỉnh nút bấm trong Sidebar nhỏ gọn */
-    section[data-testid="stSidebar"] div[data-testid="stButton"] button {
-        font-size: 12px !important;
-        font-weight: 600 !important;
-        height: auto !important;
-        min_height: 2.2rem !important; 
-        padding: 4px 8px !important;
-        margin-bottom: 2px !important; 
-        line-height: 1.2 !important;
-        white-space: normal !important; 
-    }
-    
-    /* Thu hẹp khoảng cách giữa các phần tử trong Sidebar */
-    section[data-testid="stSidebar"] .block-container {
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
-        gap: 0.5rem; 
-    }
-    
-    /* Ẩn các khoảng trắng thừa trong Sidebar */
-    section[data-testid="stSidebar"] div[data-testid="stVerticalBlock"] {
-        gap: 0.5rem !important;
+    /* MEDIA QUERY CHO MOBILE (Màn hình < 768px) */
+    @media only screen and (max-width: 768px) {
+        .main-header { font-size: 1.8rem !important; } /* Chữ nhỏ hơn trên đt */
+        .sub-header { font-size: 0.9rem !important; }
+        .quiz-container { padding: 1rem !important; } /* Giảm padding khung câu hỏi */
+        
+        /* Nút bấm to hơn trên điện thoại để dễ chạm */
+        div[data-testid="stButton"] > button {
+            height: 3.5rem !important; 
+            font-size: 16px !important;
+        }
+        
+        /* Ảnh chuyên gia xếp dọc đẹp hơn */
+        .result-card { margin-bottom: 15px !important; }
     }
 
-    /* --- NÚT BẤM CHUNG (MAIN AREA) --- */
+    /* --- BUTTON STYLING --- */
     div[data-testid="stButton"] > button {
         width: 100%; 
-        border-radius: 10px; 
+        border-radius: 12px; 
         height: 3rem; 
         font-weight: 600; 
         border: none;
@@ -206,20 +135,17 @@ st.markdown("""
         box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
         transition: all 0.2s ease;
     }
-    
     div[data-testid="stButton"] > button:hover { 
         transform: translateY(-2px); 
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
-        background-color: #f8f9fa;
-        color: #0066cc;
-        border-color: #0066cc;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15); 
+        border-color: #004A8D;
     }
-    
     div[data-testid="stButton"] > button:active {
-        background-color: #eef2f6;
+        background-color: #e3f2fd;
+        transform: translateY(0);
     }
 
-    /* --- CÁC THÀNH PHẦN KHÁC --- */
+    /* --- QUIZ & FORM --- */
     .quiz-container {
         background-color: white; 
         padding: 1.5rem; 
@@ -231,46 +157,43 @@ st.markdown("""
     .quiz-question { 
         font-size: 1.1rem; font-weight: 700; color: #2c3e50; margin-bottom: 10px; 
     }
+    
+    /* Radio Button Responsive */
     .stRadio > div { 
-        display: flex; flex-direction: row; gap: 15px; justify-content: space-between; flex-wrap: wrap; 
-        background-color: #f8f9fa; padding: 10px; border-radius: 8px;
+        background-color: #f8f9fa; 
+        padding: 10px; 
+        border-radius: 8px;
+        display: flex;
+        flex-direction: row; /* Mặc định ngang */
+        gap: 10px;
+        flex-wrap: wrap; /* Tự xuống dòng nếu hết chỗ */
     }
+
     div[data-testid="stImage"] { 
         display: block; margin-left: auto; margin-right: auto; border-radius: 12px;
     }
     .result-card {
         background: linear-gradient(135deg, #f6f9fc 0%, #ffffff 100%);
-        padding: 20px; border-radius: 12px; border-left: 5px solid #004A8D; margin-bottom: 20px;
+        padding: 15px; border-radius: 12px; border-left: 5px solid #004A8D; margin-bottom: 15px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     .intro-text {
-        font-family: 'Inter', sans-serif; line-height: 1.6; color: #333; text-align: justify;
-        background: #fff; padding: 20px; border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #eee;
+        font-family: 'Inter', sans-serif; line-height: 1.5; color: #333; text-align: justify;
+        background: #fff; padding: 15px; border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05); border: 1px solid #eee;
+        font-size: 0.95rem;
     }
     .ikigai-benefit {
         margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #00C853;
         background-color: #f1fcf5; padding: 8px; border-radius: 0 6px 6px 0;
     }
 
-    /* --- FOOTER (ĐÃ TỐI ƯU GỌN GÀNG) --- */
     .footer {
-        text-align: center;
-        color: #999;
-        font-size: 0.75rem; /* Chữ nhỏ hơn xíu */
-        margin-top: 5px;   /* Khoảng cách trên rất nhỏ */
-        padding-top: 5px;  /* Padding rất nhỏ */
-        border-top: 1px solid #f0f0f0;
-        line-height: 1;
+        text-align: center; color: #999; font-size: 0.7rem; 
+        margin-top: 10px; padding-top: 10px; border-top: 1px solid #f0f0f0;
     }
-    
-    /* Thu hẹp đường kẻ ngang tối đa */
-    hr { margin: 0.1rem 0 !important; } 
-    
-    /* Ẩn padding của các cột để tiết kiệm chỗ */
-    div[data-testid="column"] {
-        padding: 0rem;
-    }
+    hr { margin: 0.5rem 0 !important; } 
+    div[data-testid="column"] { padding: 0.2rem; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -312,7 +235,11 @@ def verify_code():
 
 def render_image_safe(image_name, width=None, fallback_icon="🖼️", caption=None):
     if os.path.exists(image_name):
-        st.image(image_name, width=width, caption=caption)
+        # TỰ ĐỘNG THAY ĐỔI: Nếu không truyền width cụ thể, hoặc đang trên mobile, ưu tiên container width
+        if width and width > 300: 
+             st.image(image_name, use_container_width=True, caption=caption)
+        else:
+             st.image(image_name, width=width, caption=caption)
     else:
         pass 
 
@@ -446,7 +373,6 @@ with st.sidebar:
     else:
         st.success("✅ Đã kết nối Key")
     
-    # Dùng class custom separator thay cho st.markdown("---") để tiết kiệm chỗ
     st.markdown('<div class="custom-separator"></div>', unsafe_allow_html=True)
 
     if st.session_state.authenticated:
@@ -461,7 +387,6 @@ with st.sidebar:
         if st.button("📊 Báo cáo"): switch_page('report')
         if st.button("👨‍🏫 Gặp chuyên gia"): switch_page('expert')
         
-        # Khoảng cách tối thiểu giữa các nhóm nút
         st.markdown('<div class="custom-separator"></div>', unsafe_allow_html=True)
         
         if st.button("🤖 Chat AI"): switch_page('chat')
@@ -480,7 +405,7 @@ if not st.session_state.authenticated:
         st.markdown("<h2 style='text-align: center; color: #004A8D;'>CỔNG ĐĂNG NHẬP</h2>", unsafe_allow_html=True)
         st.info("Chào mừng bạn đến với Ứng dụng Hướng nghiệp Next Horizon")
         
-        # THÊM LINK KHẢO SÁT VÀO MÀN HÌNH LOGIN
+        # THÊM LINK KHẢO SÁT
         st.markdown("""
         <div style="text-align: center; margin-bottom: 20px;">
             <a href="https://forms.gle/cJLw7QwrDXyAHM8m7" target="_blank" style="text-decoration: none; color: #004A8D; font-weight: bold; background-color: #e3f2fd; padding: 10px 15px; border-radius: 8px;">
@@ -519,7 +444,6 @@ elif st.session_state.page == 'welcome':
     st.markdown("### 🤝 Dịch vụ Hỗ trợ & Tư vấn")
     r3c1, r3c2 = st.columns(2)
     
-    # TRANG TRÍ LẠI 2 KHỐI CHỨC NĂNG DƯỚI CÙNG
     with r3c1:
         st.markdown("""
         <div style="
@@ -557,18 +481,24 @@ elif st.session_state.page == 'welcome':
 # --- HOLLAND ---
 elif st.session_state.page == 'holland':
     if st.session_state.holland_step == 'landing':
+        # --- NAV BAR (MOBILE FRIENDLY: 50/50) ---
+        n1, n2 = st.columns(2)
+        with n1:
+            if st.button("🏠 Trang chủ", key="nav_h_l_h"): switch_page('welcome'); st.rerun()
+        with n2:
+            if st.button("⬅️ Quay lại", key="nav_b_l_h"): switch_page('welcome'); st.rerun()
+        
         st.markdown("<br>", unsafe_allow_html=True)
+        # Mobile: Cột ảnh (1) sẽ tự động xếp trên cột chữ (1.5)
         col_img, col_text = st.columns([1, 1.5])
-        with col_img: render_image_safe("holland.png", width=350, fallback_icon="🧩")
+        with col_img: render_image_safe("holland.png", width=350, fallback_icon="🧩") # width=350 sẽ tự động bị override bởi use_container_width trong render_image_safe nếu trên mobile
         with col_text:
             st.markdown("<h1 style='color: #004A8D;'>Trắc nghiệm Holland (RIASEC)</h1>", unsafe_allow_html=True)
             st.markdown("""
             <div class='intro-text'>
             <b>Mật mã Holland:</b> Trắc nghiệm Holland chính là cơ sở để bạn đối chiếu sở thích, năng lực tự nhiên của mình với yêu cầu của các nhóm ngành nghề.
             <br><br>
-            Kết quả bài trắc nghiệm giúp bạn tìm ra ba kiểu tính cách của bạn tương ứng với <b>3 mật mã Holland</b> (ví dụ: RCE hoặc ECR). Sau đó dùng mã này kết nối với những nghề nghiệp cụ thể.
-            <br><br>
-            Hãy thả lỏng tâm trí và thực hiện khảo sát một cách thoải mái nhất.
+            Kết quả bài trắc nghiệm giúp bạn tìm ra ba kiểu tính cách của bạn tương ứng với <b>3 mật mã Holland</b>.
             </div>
             """, unsafe_allow_html=True)
             st.write("")
@@ -584,6 +514,12 @@ elif st.session_state.page == 'holland':
                 st.rerun()
 
     elif st.session_state.holland_step == 'intro':
+        n1, n2 = st.columns(2)
+        with n1:
+            if st.button("🏠 Trang chủ", key="nav_h_i_h"): switch_page('welcome'); st.rerun()
+        with n2:
+            if st.button("⬅️ Quay lại", key="nav_b_i_h"): st.session_state.holland_step = 'landing'; st.rerun()
+            
         st.markdown("<h2 style='text-align: center;'>Hướng dẫn kiểm tra</h2>", unsafe_allow_html=True)
         c1, c2, c3 = st.columns([1, 2, 1])
         with c2:
@@ -603,11 +539,14 @@ elif st.session_state.page == 'holland':
             if st.button("Bắt đầu kiểm tra ngay ➡️", type="primary", use_container_width=True):
                 st.session_state.holland_step = 'quiz'
                 st.rerun()
-        if st.button("Quay lại"):
-            st.session_state.holland_step = 'landing'
-            st.rerun()
 
     elif st.session_state.holland_step == 'quiz':
+        n1, n2 = st.columns(2)
+        with n1:
+            if st.button("🏠 Trang chủ", key="nav_h_q_h"): switch_page('welcome'); st.rerun()
+        with n2:
+            if st.button("⬅️ Quay lại", key="nav_b_q_h"): st.session_state.holland_step = 'intro'; st.rerun()
+            
         questions = st.session_state.holland_questions_ai if st.session_state.holland_questions_ai else get_static_holland_questions()
         if st.session_state.is_ai_mode: st.success("✨ Câu hỏi được tạo bởi AI")
         st.progress(50)
@@ -615,6 +554,7 @@ elif st.session_state.page == 'holland':
             answers = {}
             for i, q in enumerate(questions):
                 st.markdown(f"<div class='quiz-container'><b>Câu {i+1}:</b> {q['text']}</div>", unsafe_allow_html=True)
+                # Radio button sẽ tự động wrap trên mobile nhờ CSS mới
                 answers[i] = (st.radio(f"Lựa chọn {i}", ["👎 Không thích", "😐 Trung lập", "👍 Rất thích"], key=f"hq_{i}", horizontal=True, label_visibility="collapsed"), q['type'])
             st.markdown("<br>", unsafe_allow_html=True)
             if st.form_submit_button("✅ HOÀN THÀNH & XEM KẾT QUẢ", type="primary", use_container_width=True):
@@ -627,6 +567,12 @@ elif st.session_state.page == 'holland':
                 st.rerun()
 
     elif st.session_state.holland_step == 'result':
+        n1, n2 = st.columns(2)
+        with n1:
+            if st.button("🏠 Trang chủ", key="nav_h_r_h"): switch_page('welcome'); st.rerun()
+        with n2:
+            if st.button("⬅️ Quay lại", key="nav_b_r_h"): st.session_state.holland_step = 'landing'; st.rerun()
+            
         scores = st.session_state.holland_scores
         st.success("Kết quả phân tích:")
         rc1, rc2 = st.columns([1, 1])
@@ -652,6 +598,12 @@ elif st.session_state.page == 'holland':
 # --- BIG FIVE ---
 elif st.session_state.page == 'big_five':
     if st.session_state.big_five_step == 'landing':
+        n1, n2 = st.columns(2)
+        with n1:
+            if st.button("🏠 Trang chủ", key="nav_h_l_b"): switch_page('welcome'); st.rerun()
+        with n2:
+            if st.button("⬅️ Quay lại", key="nav_b_l_b"): switch_page('welcome'); st.rerun()
+            
         st.markdown("<br>", unsafe_allow_html=True)
         col_img, col_text = st.columns([1, 1.5])
         with col_img: render_image_safe("bigfive.png", width=350, fallback_icon="🧠")
@@ -661,8 +613,6 @@ elif st.session_state.page == 'big_five':
             <div class='intro-text'>
             <b>Trắc nghiệm Big Five</b> (OCEAN) là công cụ đánh giá tâm lý học phổ biến, mô tả tính cách qua 5 nhóm đặc điểm:
             <br>🌊 <b>Cởi mở (Openness)</b> | 🎯 <b>Tận tâm (Conscientiousness)</b> | 🗣️ <b>Hướng ngoại (Extraversion)</b> | 🤝 <b>Dễ chịu (Agreeableness)</b> | ⚡ <b>Bất ổn cảm xúc (Neuroticism)</b>
-            <br><br>
-            Bài test giúp bạn nhận biết điểm mạnh, hạn chế để lựa chọn môi trường phù hợp.
             </div>
             """, unsafe_allow_html=True)
             st.write("")
@@ -671,6 +621,12 @@ elif st.session_state.page == 'big_five':
                 st.rerun()
 
     elif st.session_state.big_five_step == 'intro':
+        n1, n2 = st.columns(2)
+        with n1:
+            if st.button("🏠 Trang chủ", key="nav_h_i_b"): switch_page('welcome'); st.rerun()
+        with n2:
+            if st.button("⬅️ Quay lại", key="nav_b_i_b"): st.session_state.big_five_step = 'landing'; st.rerun()
+            
         st.markdown("<h2 style='text-align: center;'>Hướng dẫn kiểm tra</h2>", unsafe_allow_html=True)
         c1, c2, c3 = st.columns([1, 2, 1])
         with c2:
@@ -690,11 +646,14 @@ elif st.session_state.page == 'big_five':
             if st.button("Bắt đầu kiểm tra ngay ➡️", type="primary", use_container_width=True):
                 st.session_state.big_five_step = 'quiz'
                 st.rerun()
-        if st.button("Quay lại"):
-            st.session_state.big_five_step = 'landing'
-            st.rerun()
 
     elif st.session_state.big_five_step == 'quiz':
+        n1, n2 = st.columns(2)
+        with n1:
+            if st.button("🏠 Trang chủ", key="nav_h_q_b"): switch_page('welcome'); st.rerun()
+        with n2:
+            if st.button("⬅️ Quay lại", key="nav_b_q_b"): st.session_state.big_five_step = 'intro'; st.rerun()
+            
         st.markdown("<h3 style='text-align: center; color: #555;'>Mức độ đồng ý của bạn với các nhận định sau:</h3>", unsafe_allow_html=True)
         st.progress(50)
         questions = get_big_five_questions()
@@ -718,6 +677,12 @@ elif st.session_state.page == 'big_five':
                 st.rerun()
 
     elif st.session_state.big_five_step == 'result':
+        n1, n2 = st.columns(2)
+        with n1:
+            if st.button("🏠 Trang chủ", key="nav_h_r_b"): switch_page('welcome'); st.rerun()
+        with n2:
+            if st.button("⬅️ Quay lại", key="nav_b_r_b"): st.session_state.big_five_step = 'landing'; st.rerun()
+            
         st.balloons()
         st.markdown("<h2 style='text-align: center; color: #004A8D;'>Kết quả Big Five</h2>", unsafe_allow_html=True)
         scores = st.session_state.big_five_scores
@@ -741,6 +706,12 @@ elif st.session_state.page == 'big_five':
 # --- IKIGAI ---
 elif st.session_state.page == 'ikigai':
     if st.session_state.ikigai_step == 'landing':
+        n1, n2 = st.columns(2)
+        with n1:
+            if st.button("🏠 Trang chủ", key="nav_h_l_i"): switch_page('welcome'); st.rerun()
+        with n2:
+            if st.button("⬅️ Quay lại", key="nav_b_l_i"): switch_page('welcome'); st.rerun()
+            
         st.markdown("<br>", unsafe_allow_html=True)
         col_img, col_text = st.columns([1, 1.5])
         with col_img: render_image_safe("ikigai.png", width=350, fallback_icon="🎯")
@@ -750,8 +721,6 @@ elif st.session_state.page == 'ikigai':
             <div class='intro-text'>
             <b>Trắc nghiệm Ikigai:</b> Là sự kết hợp hài hòa giữa 4 yếu tố:
             <br>❤️ <b>Yêu thích</b> | 🌟 <b>Giỏi</b> | 🌏 <b>Thế giới cần</b> | 💰 <b>Được trả công</b>
-            <br><br>
-            Ikigai giúp bạn tìm thấy mục đích sống, tăng cường hạnh phúc và hiệu quả công việc.
             <div class='ikigai-benefit'><b>Mục đích sống:</b> Xác định động lực phấn đấu.</div>
             <div class='ikigai-benefit'><b>Hạnh phúc & Sức khỏe:</b> Giảm căng thẳng, sống thọ hơn.</div>
             </div>
@@ -769,6 +738,12 @@ elif st.session_state.page == 'ikigai':
                 st.rerun()
 
     elif st.session_state.ikigai_step == 'intro':
+        n1, n2 = st.columns(2)
+        with n1:
+            if st.button("🏠 Trang chủ", key="nav_h_i_i"): switch_page('welcome'); st.rerun()
+        with n2:
+            if st.button("⬅️ Quay lại", key="nav_b_i_i"): st.session_state.ikigai_step = 'landing'; st.rerun()
+            
         st.markdown("<h2 style='text-align: center;'>Hướng dẫn đánh giá</h2>", unsafe_allow_html=True)
         c1, c2, c3 = st.columns([1, 2, 1])
         with c2:
@@ -787,11 +762,14 @@ elif st.session_state.page == 'ikigai':
             if st.button("Bắt đầu ngay ➡️", type="primary", use_container_width=True):
                 st.session_state.ikigai_step = 'quiz'
                 st.rerun()
-        if st.button("Quay lại"):
-            st.session_state.ikigai_step = 'landing'
-            st.rerun()
 
     elif st.session_state.ikigai_step == 'quiz':
+        n1, n2 = st.columns(2)
+        with n1:
+            if st.button("🏠 Trang chủ", key="nav_h_q_i"): switch_page('welcome'); st.rerun()
+        with n2:
+            if st.button("⬅️ Quay lại", key="nav_b_q_i"): st.session_state.ikigai_step = 'intro'; st.rerun()
+            
         st.markdown("<h3 style='text-align: center;'>Mức độ đồng ý của bạn:</h3>", unsafe_allow_html=True)
         st.progress(50)
         questions = st.session_state.ikigai_questions_ai if st.session_state.ikigai_questions_ai else get_static_ikigai_questions()
@@ -832,6 +810,12 @@ elif st.session_state.page == 'ikigai':
                 st.rerun()
 
     elif st.session_state.ikigai_step == 'result':
+        n1, n2 = st.columns(2)
+        with n1:
+            if st.button("🏠 Trang chủ", key="nav_h_r_i"): switch_page('welcome'); st.rerun()
+        with n2:
+            if st.button("⬅️ Quay lại", key="nav_b_r_i"): st.session_state.ikigai_step = 'landing'; st.rerun()
+            
         st.balloons()
         st.markdown("<h2 style='text-align: center; color: #004A8D;'>Biểu đồ IKIGAI của bạn</h2>", unsafe_allow_html=True)
         scores = st.session_state.ikigai_scores
@@ -856,6 +840,12 @@ elif st.session_state.page == 'ikigai':
 
 # --- SEARCH ---
 elif st.session_state.page == 'search':
+    n1, n2 = st.columns(2)
+    with n1:
+        if st.button("🏠 Trang chủ", key="nav_h_s"): switch_page('welcome'); st.rerun()
+    with n2:
+        if st.button("⬅️ Quay lại", key="nav_b_s"): switch_page('welcome'); st.rerun()
+        
     render_image_safe("search.png", width=100, fallback_icon="🔍")
     st.header("Tìm kiếm Ngành nghề")
     q = st.text_input("Nhập ngành:")
@@ -868,6 +858,12 @@ elif st.session_state.page == 'search':
 
 # --- ROADMAP ---
 elif st.session_state.page == 'roadmap':
+    n1, n2 = st.columns(2)
+    with n1:
+        if st.button("🏠 Trang chủ", key="nav_h_rm"): switch_page('welcome'); st.rerun()
+    with n2:
+        if st.button("⬅️ Quay lại", key="nav_b_rm"): switch_page('welcome'); st.rerun()
+        
     render_image_safe("roadmap.png", width=100, fallback_icon="📈")
     st.header("Lộ trình phát triển bản thân")
     
@@ -907,6 +903,12 @@ elif st.session_state.page == 'roadmap':
 
 # --- REPORT ---
 elif st.session_state.page == 'report':
+    n1, n2 = st.columns(2)
+    with n1:
+        if st.button("🏠 Trang chủ", key="nav_h_rp"): switch_page('welcome'); st.rerun()
+    with n2:
+        if st.button("⬅️ Quay lại", key="nav_b_rp"): switch_page('welcome'); st.rerun()
+        
     render_image_safe("report.png", width=100, fallback_icon="📊")
     st.header("Báo cáo Tổng hợp")
     c1, c2, c3 = st.columns(3)
@@ -933,6 +935,12 @@ elif st.session_state.page == 'report':
 
 # --- CHAT ---
 elif st.session_state.page == 'chat':
+    n1, n2 = st.columns(2)
+    with n1:
+        if st.button("🏠 Trang chủ", key="nav_h_c"): switch_page('welcome'); st.rerun()
+    with n2:
+        if st.button("⬅️ Quay lại", key="nav_b_c"): switch_page('welcome'); st.rerun()
+        
     render_image_safe("chat.png", width=100, fallback_icon="🤖")
     st.header("Chat AI")
     for m in st.session_state.chat_history: st.chat_message(m["role"]).write(m["content"])
@@ -949,18 +957,56 @@ elif st.session_state.page == 'chat':
 
 # --- EXPERT ---
 elif st.session_state.page == 'expert':
+    n1, n2 = st.columns(2)
+    with n1:
+        if st.button("🏠 Trang chủ", key="nav_h_e"): switch_page('welcome'); st.rerun()
+    with n2:
+        if st.button("⬅️ Quay lại", key="nav_b_e"): switch_page('welcome'); st.rerun()
+        
     st.header("👨‍🏫 Gặp gỡ Chuyên gia Hướng nghiệp")
-    ec1, ec2 = st.columns(2)
+    
+    # Banner cho GPT TS Vũ Việt Anh
+    st.markdown("""
+    <div style="background-color: #e8f5e9; padding: 15px; border-radius: 10px; border: 1px solid #c8e6c9; margin-bottom: 20px;">
+        <h4 style="color: #2e7d32; margin: 0;">🎁 Quà tặng từ TS. Vũ Việt Anh</h4>
+        <p style="margin: 5px 0;">Chatbot GPT chuyên sâu hỗ trợ định hướng nghề nghiệp 24/7.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    st.link_button("👉 Trò chuyện ngay với GPT TS. Vũ Việt Anh", "https://chatgpt.com/g/g-6942112d74cc8191860a9938ae29b14c-huong-nghiep-cung-ts-vu-viet-anh", type="primary", use_container_width=True)
+    
+    st.markdown("---")
+    
+    ec1, ec2, ec3 = st.columns(3)
+
     with ec1:
-        st.markdown('<div class="result-card">', unsafe_allow_html=True)
-        if os.path.exists("nguyen_van_thanh.jpg"): st.image("nguyen_van_thanh.jpg", width=200)
+        st.markdown('<div class="result-card" style="height: 100%;">', unsafe_allow_html=True)
+        if os.path.exists("nguyen_van_thanh.jpg"): 
+            st.image("nguyen_van_thanh.jpg", use_container_width=True)
         st.markdown("### TS. Nguyễn Văn Thanh\nChuyên gia tư vấn hướng nghiệp\n* SĐT: 0916.272.424\n* Email: nvthanh183@gmail.com")
         st.markdown('</div>', unsafe_allow_html=True)
+
     with ec2:
-        st.markdown('<div class="result-card">', unsafe_allow_html=True)
-        if os.path.exists("pham_cong_thanh.jpg"): st.image("pham_cong_thanh.jpg", width=200)
+        st.markdown('<div class="result-card" style="height: 100%; border-left: 5px solid #2e7d32;">', unsafe_allow_html=True)
+        if os.path.exists("vu_viet_anh.jpg"): 
+            st.image("vu_viet_anh.jpg", use_container_width=True)
+        elif os.path.exists("vuvietanh.jpg"):
+             st.image("vuvietanh.jpg", use_container_width=True)
+             
+        st.markdown("""
+        ### TS. Vũ Việt Anh
+        Chuyên gia định hướng nghề nghiệp  
+        Chủ tịch Hội đồng Cố vấn EDA INSTITUTE  
+        * SĐT: 098 4736999
+        """)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with ec3:
+        st.markdown('<div class="result-card" style="height: 100%;">', unsafe_allow_html=True)
+        if os.path.exists("pham_cong_thanh.jpg"): 
+            st.image("pham_cong_thanh.jpg", use_container_width=True)
         st.markdown("### ThS. Phạm Công Thành\nChuyên gia định hướng nghề nghiệp\n* SĐT: 038.7315.722\n* Email: phamcongthanh92@gmail.com")
         st.markdown('</div>', unsafe_allow_html=True)
+
     st.markdown("---")
     st.link_button("💬 Chat ngay qua Messenger", "https://www.facebook.com/messages/t/100001857808197", use_container_width=True)
 
