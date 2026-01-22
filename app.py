@@ -4,7 +4,6 @@ import time
 import json
 import random
 import os
-import sys
 import base64
 
 # --- 1. CẤU HÌNH TRANG WEB ---
@@ -12,7 +11,7 @@ st.set_page_config(
     page_title="Next Horizon - Hướng nghiệp",
     page_icon="🚀",
     layout="wide",
-    initial_sidebar_state="auto" # Mobile tự đóng (hiện nút menu), PC tự mở
+    initial_sidebar_state="expanded"
 )
 
 # --- HÀM XỬ LÝ HÌNH NỀN ---
@@ -30,18 +29,21 @@ def set_background(png_file):
             background-image: url("data:image/png;base64,{bin_str}");
             background-size: cover;
             background-position: center;
-            background-repeat: no-repeat;
             background-attachment: fixed;
         }}
+        /* TĂNG ĐỘ ĐẬM NỀN TRẮNG LÊN 96% ĐỂ DỄ ĐỌC CHỮ */
         .block-container {{
-            background-color: rgba(255, 255, 255, 0.95);
+            background-color: rgba(255, 255, 255, 0.96); 
             border-radius: 15px;
-            padding: 1.5rem !important;
-            margin-top: 1rem;
-            margin-bottom: 1rem;
+            padding: 2rem !important;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }}
+        /* SIDEBAR CŨNG TĂNG ĐỘ ĐẬM */
         section[data-testid="stSidebar"] {{
-            background-color: rgba(240, 242, 246, 0.95);
+            background-color: rgba(245, 247, 250, 0.96);
+            border-right: 1px solid #ddd;
         }}
         </style>
         """
@@ -49,89 +51,69 @@ def set_background(png_file):
     except FileNotFoundError:
         pass
 
+# Cài hình nền nếu có
 if os.path.exists("background.jpg"): set_background("background.jpg")
 elif os.path.exists("background.png"): set_background("background.png")
 
-# --- 2. CSS GIAO DIỆN ---
+# --- 2. CSS GIAO DIỆN (TỐI ƯU ĐỘ TƯƠNG PHẢN) ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-    html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-
-    /* --- HIỆN MENU 3 GẠCH --- */
-    header[data-testid="stHeader"] {
-        background-color: transparent !important;
-        visibility: visible !important;
-    }
-    .stDeployButton { display: none !important; }
-    div[data-testid="stDecoration"] { display: none !important; }
-    footer { display: none !important; }
-
-    /* --- SIDEBAR NÚT ĐỀU NHAU --- */
-    .sidebar-title {
-        font-size: 1.5rem !important; font-weight: 800 !important;
-        color: #004A8D !important; text-align: center !important;
-        margin-bottom: 0.5rem !important;
-    }
-    /* CSS ép nút sidebar full width */
-    section[data-testid="stSidebar"] .stButton button {
-        width: 100% !important;
-        text-align: center !important;
-        justify-content: center !important;
-        font-weight: 600 !important;
-    }
-
-    /* --- GIAO DIỆN CHUNG --- */
-    .main-header {
-        font-size: 2.8rem !important; font-weight: 900; 
-        background: -webkit-linear-gradient(45deg, #004A8D, #0088cc);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        text-align: center; margin-top: -10px !important; margin-bottom: 0rem;
-    }
-    .sub-header {
-        font-size: 1.1rem !important; font-weight: 700; color: #555; 
-        text-align: center; margin-bottom: 15px;
+    
+    /* Ép màu chữ toàn bộ web sang đen đậm */
+    html, body, [class*="css"], .stMarkdown, .stText, p, div { 
+        font-family: 'Inter', sans-serif; 
+        color: #111111 !important; /* Màu đen đậm */
     }
     
-    /* Nút bấm ở màn hình chính */
-    .main .stButton button {
+    /* Ẩn Header, Footer, Menu */
+    header[data-testid="stHeader"], footer, #MainMenu, [data-testid="stToolbar"], div[data-testid="stDecoration"] {
+        display: none !important;
+    }
+    
+    /* Style Tiêu đề & Nút bấm */
+    .main-header {
+        font-size: 3rem !important; font-weight: 900 !important;
+        background: -webkit-linear-gradient(45deg, #004A8D, #0088cc);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        text-align: center; margin-top: -20px !important; margin-bottom: 0rem !important;
+        text-transform: uppercase; letter-spacing: -1px;
+        text-shadow: 0px 2px 4px rgba(0,0,0,0.1); /* Thêm bóng nhẹ cho tiêu đề nổi bật */
+    }
+    .sub-header {
+        font-size: 1.2rem !important; font-weight: 700 !important; color: #333 !important;
+        text-align: center; margin-bottom: 15px !important;
+    }
+    .sidebar-title {
+        font-size: 1.5rem !important; font-weight: 800 !important; color: #004A8D !important;
+        text-align: center !important; margin-bottom: 0.5rem !important;
+    }
+    div[data-testid="stButton"] > button {
         width: 100%; border-radius: 10px; height: 3rem; font-weight: 600;
-        border: 1px solid #e0e0e0; background-color: white; color: #004A8D;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s;
+        border: 1px solid #ccc; background-color: #ffffff; color: #004A8D !important;
+        transition: all 0.2s ease;
     }
-    .main .stButton button:hover {
-        transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        background-color: #f8f9fa; color: #0066cc; border-color: #0066cc;
+    div[data-testid="stButton"] > button:hover {
+        transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        background-color: #f0f7ff !important; color: #003366 !important; border-color: #003366;
     }
-
-    /* Cards */
-    .quiz-container {
-        background-color: white; padding: 1.5rem; border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 1rem; border: 1px solid #f0f2f5;
-    }
+    
+    /* Style Kết quả & Hộp tin */
     .result-card {
-        background: linear-gradient(135deg, #f6f9fc 0%, #ffffff 100%);
+        background: #ffffff; /* Nền trắng hoàn toàn */
         padding: 20px; border-radius: 12px; border-left: 5px solid #004A8D; margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    .intro-text {
-        font-family: 'Inter', sans-serif; line-height: 1.6; color: #333; text-align: justify;
-        background: #fff; padding: 20px; border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #eee;
-    }
-    .ikigai-benefit {
-        margin-bottom: 8px; padding-left: 10px; border-left: 3px solid #00C853;
-        background-color: #f1fcf5; padding: 8px; border-radius: 0 6px 6px 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        color: #000 !important;
     }
     .footer {
-        text-align: center; color: #999; font-size: 0.75rem; 
-        margin-top: 5px; padding-top: 5px; border-top: 1px solid #f0f0f0;
+        text-align: center; color: #555 !important; font-size: 0.8rem; font-weight: 600;
+        margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;
     }
     
     /* Responsive Mobile */
     @media (max-width: 768px) {
         .main-header { font-size: 2rem !important; }
-        .block-container { padding-top: 3rem !important; }
+        .block-container { padding: 1rem !important; } /* Giảm padding trên mobile cho thoáng */
         .stRadio > div { flex-direction: column; gap: 10px; }
     }
     @media (min-width: 769px) {
@@ -140,22 +122,24 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. STATE ---
+# --- 3. KHỞI TẠO STATE ---
 if 'page' not in st.session_state: st.session_state.page = 'welcome'
 if 'authenticated' not in st.session_state: st.session_state.authenticated = False
 if 'auth_error' not in st.session_state: st.session_state.auth_error = ""
+
 if 'holland_scores' not in st.session_state: st.session_state.holland_scores = None
 if 'big_five_scores' not in st.session_state: st.session_state.big_five_scores = None
 if 'ikigai_scores' not in st.session_state: st.session_state.ikigai_scores = None
+
+if 'chat_history' not in st.session_state: st.session_state.chat_history = []
 if 'holland_step' not in st.session_state: st.session_state.holland_step = 'landing'
 if 'big_five_step' not in st.session_state: st.session_state.big_five_step = 'landing'
 if 'ikigai_step' not in st.session_state: st.session_state.ikigai_step = 'landing'
-if 'chat_history' not in st.session_state: st.session_state.chat_history = []
 if 'holland_questions_ai' not in st.session_state: st.session_state.holland_questions_ai = None
 if 'ikigai_questions_ai' not in st.session_state: st.session_state.ikigai_questions_ai = None
 if 'is_ai_mode' not in st.session_state: st.session_state.is_ai_mode = False
 
-# --- 4. LOGIC ---
+# --- 4. HÀM LOGIC ---
 def switch_page(page_name):
     st.session_state.page = page_name
     if page_name == 'holland': st.session_state.holland_step = 'landing'
@@ -163,7 +147,7 @@ def switch_page(page_name):
     if page_name == 'ikigai': st.session_state.ikigai_step = 'landing'
 
 def verify_code():
-    if st.session_state.input_code.strip().upper() == "NEXT2025":
+    if st.session_state.input_code.strip().upper() == "NEXT2025": # Mã mặc định
         st.session_state.authenticated = True
         st.session_state.auth_error = ""
     else:
@@ -171,98 +155,127 @@ def verify_code():
 
 def render_image_safe(image_name, width=None):
     if os.path.exists(image_name):
-        if width: st.image(image_name, width=width)
-        else: st.image(image_name, use_container_width=True)
+        st.image(image_name, width=width)
 
-# --- AI & DATA ---
-def get_ai_response(prompt, api_key):
-    if not api_key: return None
+# Lấy API Key từ Secrets (Ưu tiên) hoặc nhập tay
+api_key = st.secrets.get("GEMINI_API_KEY", None)
+
+def get_ai_response(prompt, api_key_val=None):
+    # Dùng api_key global nếu không truyền vào
+    key_to_use = api_key_val if api_key_val else api_key
+    if not key_to_use: return None
     try:
-        genai.configure(api_key=api_key)
-        return genai.GenerativeModel('gemini-1.5-flash').generate_content(prompt).text
+        genai.configure(api_key=key_to_use)
+        # Thử các model khác nhau để tăng độ ổn định
+        models_to_try = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro']
+        for model_name in models_to_try:
+            try:
+                model = genai.GenerativeModel(model_name)
+                response = model.generate_content(prompt)
+                return response.text
+            except: continue
+        return None
     except: return None
 
-def generate_questions_logic(api_key):
-    if not api_key: return get_static_holland_questions(), False
+def generate_questions_logic(api_key_val):
+    if not api_key_val: return get_static_holland_questions(), False
     try:
         p = f"Tạo 12 câu trắc nghiệm Holland (RIASEC) ngắn gọn cho HSVN. Seed: {random.randint(1,1000)}. JSON Only: [{{'text': '...', 'type': 'R'}}]"
-        res = get_ai_response(p, api_key)
-        s, e = res.find('['), res.rfind(']') + 1
-        return json.loads(res[s:e]), True
-    except: return get_static_holland_questions(), False
+        res = get_ai_response(p, api_key_val)
+        if res:
+            s = res.find('[')
+            e = res.rfind(']') + 1
+            if s != -1 and e != -1:
+                return json.loads(res[s:e]), True
+    except: pass
+    return get_static_holland_questions(), False
 
-def generate_ikigai_questions_logic(api_key):
-    if not api_key: return get_static_ikigai_questions(), False
+def generate_ikigai_questions_logic(api_key_val):
+    if not api_key_val: return get_static_ikigai_questions(), False
     try:
         p = f"Tạo 12 câu trắc nghiệm Ikigai (Love, Good, World, Paid). Seed: {random.randint(1,1000)}. JSON Only."
-        res = get_ai_response(p, api_key)
-        s, e = res.find('['), res.rfind(']') + 1
-        return json.loads(res[s:e]), True
-    except: return get_static_ikigai_questions(), False
+        res = get_ai_response(p, api_key_val)
+        if res:
+            s = res.find('[')
+            e = res.rfind(']') + 1
+            if s != -1 and e != -1:
+                return json.loads(res[s:e]), True
+    except: pass
+    return get_static_ikigai_questions(), False
 
+# --- DỮ LIỆU TĨNH ---
 def get_static_holland_questions():
-    return [{"text": "Thích sửa chữa máy móc", "type": "R"}, {"text": "Thích giải toán khó", "type": "I"}, 
-            {"text": "Thích vẽ tranh", "type": "A"}, {"text": "Thích giúp đỡ người khác", "type": "S"}, 
-            {"text": "Thích lãnh đạo nhóm", "type": "E"}, {"text": "Thích làm việc sổ sách", "type": "C"},
-            {"text": "Thích vận động tay chân", "type": "R"}, {"text": "Thích tìm hiểu khoa học", "type": "I"}, 
-            {"text": "Thích chơi nhạc cụ", "type": "A"}, {"text": "Thích lắng nghe tâm sự", "type": "S"}, 
-            {"text": "Thích kinh doanh", "type": "E"}, {"text": "Thích sự ngăn nắp", "type": "C"}]
+    return [
+        {"text": "Thích sửa chữa các thiết bị điện tử, máy móc", "type": "R"},
+        {"text": "Thích làm việc ngoài trời, vận động tay chân", "type": "R"},
+        {"text": "Thích tìm hiểu, phân tích các vấn đề khoa học", "type": "I"},
+        {"text": "Thích giải các bài toán khó hoặc chơi cờ trí tuệ", "type": "I"},
+        {"text": "Thích vẽ tranh, chơi nhạc cụ hoặc viết lách", "type": "A"},
+        {"text": "Thích sáng tạo ý tưởng mới, không thích khuôn mẫu", "type": "A"},
+        {"text": "Thích lắng nghe và chia sẻ tâm tư với người khác", "type": "S"},
+        {"text": "Thích tham gia các hoạt động tình nguyện, cộng đồng", "type": "S"},
+        {"text": "Thích đứng trước đám đông thuyết trình", "type": "E"},
+        {"text": "Thích kinh doanh, bán hàng hoặc thuyết phục người khác", "type": "E"},
+        {"text": "Thích làm việc với các con số, sổ sách kế toán", "type": "C"},
+        {"text": "Thích sắp xếp mọi thứ ngăn nắp, có quy trình", "type": "C"}
+    ]
 
 def get_big_five_questions():
-    return [{"text": "Tôi thích giao tiếp", "trait": "E", "reverse": False}, {"text": "Tôi hay lo lắng", "trait": "N", "reverse": False},
-            {"text": "Tôi giàu trí tưởng tượng", "trait": "O", "reverse": False}, {"text": "Tôi quan tâm người khác", "trait": "A", "reverse": False},
-            {"text": "Tôi làm việc có kế hoạch", "trait": "C", "reverse": False}, {"text": "Tôi thích yên tĩnh", "trait": "E", "reverse": True},
-            {"text": "Tôi bình tĩnh", "trait": "N", "reverse": True}, {"text": "Tôi thực tế", "trait": "O", "reverse": True},
-            {"text": "Tôi ít quan tâm người khác", "trait": "A", "reverse": True}, {"text": "Tôi hơi bừa bộn", "trait": "C", "reverse": True}]
+    return [
+        {"text": "Tôi là người thích giao tiếp và tràn đầy năng lượng.", "trait": "E", "reverse": False},
+        {"text": "Tôi thường hay lo lắng về những điều nhỏ nhặt.", "trait": "N", "reverse": False},
+        {"text": "Tôi có trí tưởng tượng phong phú và thích những ý tưởng mới.", "trait": "O", "reverse": False},
+        {"text": "Tôi thường quan tâm và đồng cảm với cảm xúc của người khác.", "trait": "A", "reverse": False},
+        {"text": "Tôi làm việc có kế hoạch và luôn hoàn thành nhiệm vụ đúng hạn.", "trait": "C", "reverse": False},
+        {"text": "Tôi thích sự yên tĩnh và ít nói khi ở chỗ đông người.", "trait": "E", "reverse": True},
+        {"text": "Tôi là người bình tĩnh, ít khi bị căng thẳng.", "trait": "N", "reverse": True},
+        {"text": "Tôi thích những thứ quen thuộc và thực tế hơn là trừu tượng.", "trait": "O", "reverse": True},
+        {"text": "Tôi đôi khi cảm thấy khó khăn để quan tâm đến vấn đề của người khác.", "trait": "A", "reverse": True},
+        {"text": "Tôi đôi khi hơi bừa bộn và làm việc ngẫu hứng.", "trait": "C", "reverse": True}
+    ]
 
 def get_static_ikigai_questions():
-    return [{"text": "Tôi hạnh phúc khi làm việc này", "category": "Love"}, {"text": "Tôi làm giỏi việc này", "category": "Good"},
-            {"text": "Xã hội cần việc này", "category": "World"}, {"text": "Việc này kiếm ra tiền", "category": "Paid"},
-            {"text": "Tôi quên thời gian khi làm", "category": "Love"}, {"text": "Mọi người khen tôi giỏi", "category": "Good"},
-            {"text": "Việc này giúp ích cộng đồng", "category": "World"}, {"text": "Tôi ưu tiên thu nhập", "category": "Paid"}]
+    return [
+        {"text": "Tôi thường xuyên cảm thấy hạnh phúc khi làm những việc mình thích.", "category": "Love"},
+        {"text": "Tôi có những sở thích đặc biệt muốn dành thời gian cho chúng.", "category": "Love"},
+        {"text": "Mọi người thường khen ngợi kỹ năng của tôi.", "category": "Good"},
+        {"text": "Tôi tự tin giải quyết vấn đề thuộc sở trường.", "category": "Good"},
+        {"text": "Tôi quan tâm đến các vấn đề xã hội.", "category": "World"},
+        {"text": "Tôi muốn công việc mang lại giá trị cho cộng đồng.", "category": "World"},
+        {"text": "Tôi có kỹ năng mà thị trường sẵn sàng trả lương.", "category": "Paid"},
+        {"text": "Tôi ưu tiên nghề nghiệp có thu nhập ổn định.", "category": "Paid"}
+    ]
 
 # --- 5. SIDEBAR ---
 with st.sidebar:
-    if os.path.exists("logo1.png") and os.path.exists("logo2.png"):
-        c1, c2 = st.columns(2)
-        with c1: st.image("logo1.png", use_container_width=True)
-        with c2: st.image("logo2.png", use_container_width=True)
-    elif os.path.exists("logo1.png"):
-        st.image("logo1.png", width=120)
-        
+    if os.path.exists("logo1.png"): st.image("logo1.png", width=120)
     st.markdown('<div class="sidebar-title">🚀 Next Horizon</div>', unsafe_allow_html=True)
     
-    user_api_key = st.secrets.get("GEMINI_API_KEY", None)
-    if not user_api_key:
-        user_api_key = st.text_input("🔑 Nhập API Key:", type="password")
-    else:
-        st.success("✅ Đã kết nối Key")
+    if not api_key:
+        api_key = st.text_input("🔑 Nhập API Key:", type="password")
     
-    st.markdown('<div class="custom-separator"></div>', unsafe_allow_html=True)
-
+    st.markdown("---")
     if st.session_state.authenticated:
         if st.button("🏠 Trang chủ", use_container_width=True): switch_page('welcome'); st.rerun()
         
         st.caption("CÔNG CỤ ĐÁNH GIÁ")
-        if st.button("🧩 Trắc nghiệm Holland", use_container_width=True): switch_page('holland'); st.rerun()
-        if st.button("🧠 Trắc nghiệm Big Five", use_container_width=True): switch_page('big_five'); st.rerun()
-        if st.button("🎯 Khám phá Ikigai", use_container_width=True): switch_page('ikigai'); st.rerun()
+        if st.button("🧩 Holland", use_container_width=True): switch_page('holland'); st.rerun()
+        if st.button("🧠 Big Five", use_container_width=True): switch_page('big_five'); st.rerun()
+        if st.button("🎯 Ikigai", use_container_width=True): switch_page('ikigai'); st.rerun()
         
         st.caption("TƯ VẤN & HỖ TRỢ")
         if st.button("🔍 Tra cứu ngành nghề", use_container_width=True): switch_page('search'); st.rerun()
         if st.button("📈 Lộ trình phát triển", use_container_width=True): switch_page('roadmap'); st.rerun()
         if st.button("📊 Báo cáo tổng hợp", use_container_width=True): switch_page('report'); st.rerun()
-        if st.button("🤖 Trợ lý AI", use_container_width=True): switch_page('chat'); st.rerun()
         if st.button("👨‍🏫 Gặp chuyên gia", use_container_width=True): switch_page('expert'); st.rerun()
         
-        st.markdown('<div class="custom-separator"></div>', unsafe_allow_html=True)
-        
+        st.markdown("---")
         if st.button("🤖 Chat AI", use_container_width=True): switch_page('chat'); st.rerun()
         if st.button("🚪 Đăng xuất", use_container_width=True):
             st.session_state.authenticated = False
             st.rerun()
 
-# --- 6. NỘI DUNG CHÍNH ---
+# --- 6. GIAO DIỆN CHÍNH ---
 
 # --- LOGIN ---
 if not st.session_state.authenticated:
@@ -272,7 +285,13 @@ if not st.session_state.authenticated:
         render_image_safe("login.png", width=150)
         st.markdown("<h2 style='text-align: center; color: #004A8D;'>CỔNG ĐĂNG NHẬP</h2>", unsafe_allow_html=True)
         st.info("Chào mừng bạn đến với Ứng dụng Hướng nghiệp Next Horizon")
-        st.markdown("""<div style="text-align: center; margin-bottom: 20px;"><a href="https://forms.gle/cJLw7QwrDXyAHM8m7" target="_blank" style="text-decoration: none; color: #004A8D; font-weight: bold; background-color: #e3f2fd; padding: 10px 15px; border-radius: 8px;">👉 Chưa có mã? Nhấn vào đây để đăng ký</a></div>""", unsafe_allow_html=True)
+        st.markdown("""
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="https://forms.gle/cJLw7QwrDXyAHM8m7" target="_blank" style="text-decoration: none; color: #004A8D; font-weight: bold; background-color: #e3f2fd; padding: 10px 15px; border-radius: 8px;">
+                👉 Chưa có mã? Nhấn vào đây để đăng ký
+            </a>
+        </div>
+        """, unsafe_allow_html=True)
         st.text_input("Mời bạn nhập mã xác nhận vào đây:", key="input_code", on_change=verify_code, type="password")
         if st.session_state.auth_error: st.error(st.session_state.auth_error)
 
@@ -284,23 +303,21 @@ elif st.session_state.page == 'welcome':
     r1c1, r1c2 = st.columns(2)
     with r1c1:
         st.info("🧩 **Trắc nghiệm Holland**\n\nTìm ra nhóm sở thích nghề nghiệp phù hợp nhất với bạn.")
-        if st.button("Bắt đầu Holland", key="wc_h"): switch_page('holland')
+        if st.button("Bắt đầu Holland", key="wc_h"): switch_page('holland'); st.rerun()
     with r1c2:
         st.warning("🎯 **Khám phá IKIGAI**\n\n:red[Tìm điểm giao thoa của Đam mê, Kỹ năng và Nhu cầu xã hội.]")
-        if st.button("Bắt đầu IKIGAI", key="wc_i"): switch_page('ikigai')
+        if st.button("Bắt đầu IKIGAI", key="wc_i"): switch_page('ikigai'); st.rerun()
 
     r2c1, r2c2 = st.columns(2)
     with r2c1:
         st.success("🧠 **Trắc nghiệm Big Five**\n\nHiểu rõ 5 đặc điểm tính cách cốt lõi của bản thân.")
-        if st.button("Bắt đầu Big Five", key="wc_b"): switch_page('big_five')
+        if st.button("Bắt đầu Big Five", key="wc_b"): switch_page('big_five'); st.rerun()
     with r2c2:
         st.info("🔍 **Tìm kiếm Ngành nghề**\n\nTra cứu thông tin chi tiết về các ngành học và trường ĐH.")
-        if st.button("Tìm kiếm Ngành nghề", key="wc_s"): switch_page('search')
+        if st.button("Tìm kiếm Ngành nghề", key="wc_s"): switch_page('search'); st.rerun()
     
-    st.markdown('<div class="custom-separator"></div>', unsafe_allow_html=True)
-    st.markdown("### 🤝 Dịch vụ Hỗ trợ & Tư vấn")
+    st.markdown("---")
     r3c1, r3c2 = st.columns(2)
-    
     with r3c1:
         st.markdown("""
         <div style="background-color: #FFF3E0; padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #FFE0B2; margin-bottom: 10px;">
@@ -308,7 +325,7 @@ elif st.session_state.page == 'welcome':
             <p style="color: #BF360C; font-weight: 600; margin: 5px 0 0 0;">Hỏi đáp mọi lúc mọi nơi</p>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Chat với AI"): switch_page('chat')
+        if st.button("Chat với AI"): switch_page('chat'); st.rerun()
         
     with r3c2:
         st.markdown("""
@@ -317,7 +334,10 @@ elif st.session_state.page == 'welcome':
             <p style="color: #01579B; font-weight: 600; margin: 5px 0 0 0;">Kết nối trực tiếp với thầy cô</p>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("Gặp Chuyên gia"): switch_page('expert')
+        if st.button("Gặp Chuyên gia"): switch_page('expert'); st.rerun()
+    
+    st.markdown("---")
+    st.markdown("<div style='text-align: center; color: #666;'>Sản phẩm thuộc về Câu lạc bộ hướng nghiệp Next Horizon - UK Academy</div>", unsafe_allow_html=True)
 
 # --- HOLLAND ---
 elif st.session_state.page == 'holland':
@@ -336,9 +356,9 @@ elif st.session_state.page == 'holland':
             st.markdown("<div class='intro-text'><b>Mật mã Holland:</b> Trắc nghiệm Holland chính là cơ sở để bạn đối chiếu sở thích, năng lực tự nhiên của mình với yêu cầu của các nhóm ngành nghề.\n\nKết quả bài trắc nghiệm giúp bạn tìm ra ba kiểu tính cách của bạn tương ứng với 3 mật mã Holland.</div>", unsafe_allow_html=True)
             st.write("")
             if st.button("Bắt đầu trắc nghiệm Holland", type="primary"):
-                if user_api_key and not st.session_state.holland_questions_ai:
+                if api_key and not st.session_state.holland_questions_ai:
                     with st.spinner("AI đang soạn thảo..."):
-                        q, is_ai = generate_questions_logic(user_api_key)
+                        q, is_ai = generate_questions_logic(api_key)
                         st.session_state.holland_questions_ai = q
                         st.session_state.is_ai_mode = is_ai
                 elif not st.session_state.holland_questions_ai:
@@ -393,10 +413,10 @@ elif st.session_state.page == 'holland':
             if st.button("⬅️ Quay lại", key="hr_b", use_container_width=True): st.session_state.holland_step='landing'; st.rerun()
         st.success("Kết quả phân tích:")
         st.bar_chart(st.session_state.holland_scores)
-        if user_api_key:
+        if api_key:
             with st.spinner("AI đang phân tích..."):
                 top = sorted(st.session_state.holland_scores.items(), key=lambda x:x[1], reverse=True)[0]
-                st.markdown(f"<div class='result-card'>{get_ai_response(f'Holland {top[0]}', user_api_key)}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='result-card'>{get_ai_response(f'Holland {top[0]}', api_key)}</div>", unsafe_allow_html=True)
         if st.button("Làm lại"): st.session_state.holland_questions_ai=None; st.session_state.holland_step='landing'; st.rerun()
 
 # --- BIG FIVE ---
@@ -483,9 +503,9 @@ elif st.session_state.page == 'ikigai':
             st.markdown("<div class='intro-text'><b>Trắc nghiệm Ikigai: Là sự kết hợp hài hòa giữa 4 yếu tố:\n\n❤️ Yêu thích | 🌟 Giỏi | 🌏 Thế giới cần | 💰 Được trả công\n\nMục đích sống: Xác định động lực phấn đấu.\n\nHạnh phúc & Sức khỏe: Giảm căng thẳng, sống thọ hơn.</b>...</div>", unsafe_allow_html=True)
             st.write("")
             if st.button("Bắt đầu khám phá Ikigai", type="primary"):
-                if user_api_key and not st.session_state.ikigai_questions_ai:
+                if api_key and not st.session_state.ikigai_questions_ai:
                     with st.spinner("AI đang tạo đề..."):
-                        q, is_ai = generate_ikigai_questions_logic(user_api_key)
+                        q, is_ai = generate_ikigai_questions_logic(api_key)
                         st.session_state.ikigai_questions_ai = q
                         st.session_state.is_ai_mode = is_ai
                 elif not st.session_state.ikigai_questions_ai:
@@ -552,29 +572,31 @@ elif st.session_state.page == 'expert':
     with n2:
         if st.button("⬅️ Quay lại", key="e_b", use_container_width=True): switch_page('welcome'); st.rerun()
         
-    # Banner
+    # Banner GPT TS Vũ Việt Anh (GIỮ LẠI THEO YÊU CẦU)
     st.markdown("""<div style="background-color: #e8f5e9; padding: 15px; border-radius: 10px; border: 1px solid #c8e6c9; margin-bottom: 20px;"><h4 style="color: #2e7d32; margin: 0;">🎁 Quà tặng từ TS. Vũ Việt Anh</h4><p style="margin: 5px 0;">Chatbot GPT chuyên sâu hỗ trợ định hướng nghề nghiệp 24/7.</p></div>""", unsafe_allow_html=True)
     st.link_button("👉 Trò chuyện ngay với GPT TS. Vũ Việt Anh", "https://chatgpt.com/g/g-6942112d74cc8191860a9938ae29b14c-huong-nghiep-cung-ts-vu-viet-anh", type="primary", use_container_width=True)
-    st.markdown("---")
     
-    # 3 CỘT CHUYÊN GIA
+    # Đã xóa dòng st.markdown("---") ở đây để bỏ thanh gạch ngang vô duyên
+
+    # 3 CỘT CHUYÊN GIA (KHÔI PHỤC LẠI ĐẦY ĐỦ)
     ec1, ec2, ec3 = st.columns(3)
     with ec1:
-        st.markdown('<div class="result-card" style="height: 100%;">', unsafe_allow_html=True)
+        #st.markdown('<div class="result-card" style="height: 100%;">', unsafe_allow_html=True)
         if os.path.exists("nguyen_van_thanh.jpg"): st.image("nguyen_van_thanh.jpg", use_container_width=True)
         st.markdown("### TS. Nguyễn Văn Thanh\nChuyên gia tư vấn hướng nghiệp\n* SĐT: 0916.272.424\n* Email: nvthanh183@gmail.com")
-        st.markdown('</div>', unsafe_allow_html=True)
+        #st.markdown('</div>', unsafe_allow_html=True)
     with ec2:
-        st.markdown('<div class="result-card" style="height: 100%; border-left: 5px solid #2e7d32;">', unsafe_allow_html=True)
+        #st.markdown('<div class="result-card" style="height: 100%; border-left: 5px solid #2e7d32;">', unsafe_allow_html=True)
         if os.path.exists("vu_viet_anh.jpg"): st.image("vu_viet_anh.jpg", use_container_width=True)
         elif os.path.exists("vuvietanh.jpg"): st.image("vuvietanh.jpg", use_container_width=True)
         st.markdown("### TS. Vũ Việt Anh\nChuyên gia định hướng nghề nghiệp\nChủ tịch HĐ Cố vấn EDA INSTITUTE\n* SĐT: 098 4736999")
-        st.markdown('</div>', unsafe_allow_html=True)
+        #st.markdown('</div>', unsafe_allow_html=True)
     with ec3:
-        st.markdown('<div class="result-card" style="height: 100%;">', unsafe_allow_html=True)
+        #st.markdown('<div class="result-card" style="height: 100%;">', unsafe_allow_html=True)
         if os.path.exists("pham_cong_thanh.jpg"): st.image("pham_cong_thanh.jpg", use_container_width=True)
         st.markdown("### ThS. Phạm Công Thành\nChuyên gia định hướng nghề nghiệp\n* SĐT: 038.7315.722\n* Email: phamcongthanh92@gmail.com")
-        st.markdown('</div>', unsafe_allow_html=True)
+        #st.markdown('</div>', unsafe_allow_html=True)
+    
     st.markdown("---")
     st.link_button("💬 Chat ngay qua Messenger", "https://www.facebook.com/messages/t/100001857808197", use_container_width=True)
 
@@ -592,8 +614,8 @@ elif st.session_state.page == 'chat':
     if p := st.chat_input("Hỏi tôi..."):
         st.session_state.chat_history.append({"role":"user","content":p})
         st.chat_message("user").write(p)
-        if user_api_key:
-            res = get_ai_response(p, user_api_key)
+        if api_key:
+            res = get_ai_response(p, api_key)
             st.session_state.chat_history.append({"role":"assistant","content":res})
             st.chat_message("assistant").write(res)
 
@@ -625,7 +647,7 @@ elif st.session_state.page == 'search':
     st.header("Tìm kiếm Ngành nghề")
     q = st.text_input("Nhập ngành:")
     if q and st.button("Tìm kiếm"):
-        if user_api_key: st.markdown(get_ai_response(f"Thông tin ngành {q} ở VN", user_api_key))
+        if api_key: st.markdown(get_ai_response(f"Thông tin ngành {q} ở VN", api_key))
 elif st.session_state.page == 'roadmap':
     # --- NAV BAR ---
     n1, n2 = st.columns(2)
@@ -636,8 +658,8 @@ elif st.session_state.page == 'roadmap':
         
     render_image_safe("roadmap.png", 100)
     st.header("Lộ trình phát triển")
-    if st.button("Lập lộ trình AI") and user_api_key:
-        st.markdown(get_ai_response(f"Lộ trình phát triển cho Holland={st.session_state.holland_scores}", user_api_key))
+    if st.button("Lập lộ trình AI") and api_key:
+        st.markdown(get_ai_response(f"Lộ trình phát triển cho Holland={st.session_state.holland_scores}", api_key))
 
 # --- FOOTER ---
 st.markdown("---")
