@@ -31,7 +31,6 @@ def set_background(png_file):
             background-position: center;
             background-attachment: fixed;
         }}
-        /* TĂNG ĐỘ ĐẬM NỀN TRẮNG LÊN 96% ĐỂ DỄ ĐỌC CHỮ */
         .block-container {{
             background-color: rgba(255, 255, 255, 0.96); 
             border-radius: 15px;
@@ -40,7 +39,6 @@ def set_background(png_file):
             margin-bottom: 2rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }}
-        /* SIDEBAR CŨNG TĂNG ĐỘ ĐẬM */
         section[data-testid="stSidebar"] {{
             background-color: rgba(245, 247, 250, 0.96);
             border-right: 1px solid #ddd;
@@ -51,34 +49,27 @@ def set_background(png_file):
     except FileNotFoundError:
         pass
 
-# Cài hình nền nếu có
 if os.path.exists("background.jpg"): set_background("background.jpg")
 elif os.path.exists("background.png"): set_background("background.png")
 
-# --- 2. CSS GIAO DIỆN (TỐI ƯU ĐỘ TƯƠNG PHẢN) ---
+# --- 2. CSS GIAO DIỆN ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-    
-    /* Ép màu chữ toàn bộ web sang đen đậm */
     html, body, [class*="css"], .stMarkdown, .stText, p, div { 
         font-family: 'Inter', sans-serif; 
-        color: #111111 !important; /* Màu đen đậm */
+        color: #111111 !important;
     }
-    
-    /* Ẩn Header, Footer, Menu */
     header[data-testid="stHeader"], footer, #MainMenu, [data-testid="stToolbar"], div[data-testid="stDecoration"] {
         display: none !important;
     }
-    
-    /* Style Tiêu đề & Nút bấm */
     .main-header {
         font-size: 3rem !important; font-weight: 900 !important;
         background: -webkit-linear-gradient(45deg, #004A8D, #0088cc);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         text-align: center; margin-top: -20px !important; margin-bottom: 0rem !important;
         text-transform: uppercase; letter-spacing: -1px;
-        text-shadow: 0px 2px 4px rgba(0,0,0,0.1); /* Thêm bóng nhẹ cho tiêu đề nổi bật */
+        text-shadow: 0px 2px 4px rgba(0,0,0,0.1);
     }
     .sub-header {
         font-size: 1.2rem !important; font-weight: 700 !important; color: #333 !important;
@@ -97,23 +88,22 @@ st.markdown("""
         transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         background-color: #f0f7ff !important; color: #003366 !important; border-color: #003366;
     }
-    
-    /* Style Kết quả & Hộp tin */
     .result-card {
-        background: #ffffff; /* Nền trắng hoàn toàn */
-        padding: 20px; border-radius: 12px; border-left: 5px solid #004A8D; margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        color: #000 !important;
+        background: #ffffff; padding: 20px; border-radius: 12px; 
+        border-left: 5px solid #004A8D; margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1); color: #000 !important;
     }
     .footer {
         text-align: center; color: #555 !important; font-size: 0.8rem; font-weight: 600;
         margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd;
     }
-    
-    /* Responsive Mobile */
+    /* Style riêng cho bảng câu hỏi Big Five */
+    .bigfive-row {
+        padding: 10px 0; border-bottom: 1px solid #eee;
+    }
     @media (max-width: 768px) {
         .main-header { font-size: 2rem !important; }
-        .block-container { padding: 1rem !important; } /* Giảm padding trên mobile cho thoáng */
+        .block-container { padding: 1rem !important; }
         .stRadio > div { flex-direction: column; gap: 10px; }
     }
     @media (min-width: 769px) {
@@ -147,7 +137,7 @@ def switch_page(page_name):
     if page_name == 'ikigai': st.session_state.ikigai_step = 'landing'
 
 def verify_code():
-    if st.session_state.input_code.strip().upper() == "NEXT2025": # Mã mặc định
+    if st.session_state.input_code.strip().upper() == "NEXT2025": 
         st.session_state.authenticated = True
         st.session_state.auth_error = ""
     else:
@@ -157,16 +147,13 @@ def render_image_safe(image_name, width=None):
     if os.path.exists(image_name):
         st.image(image_name, width=width)
 
-# Lấy API Key từ Secrets (Ưu tiên) hoặc nhập tay
 api_key = st.secrets.get("GEMINI_API_KEY", None)
 
 def get_ai_response(prompt, api_key_val=None):
-    # Dùng api_key global nếu không truyền vào
     key_to_use = api_key_val if api_key_val else api_key
     if not key_to_use: return None
     try:
         genai.configure(api_key=key_to_use)
-        # Thử các model khác nhau để tăng độ ổn định
         models_to_try = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro']
         for model_name in models_to_try:
             try:
@@ -203,36 +190,150 @@ def generate_ikigai_questions_logic(api_key_val):
     except: pass
     return get_static_ikigai_questions(), False
 
-# --- DỮ LIỆU TĨNH ---
-def get_static_holland_questions():
-    return [
-        {"text": "Thích sửa chữa các thiết bị điện tử, máy móc", "type": "R"},
-        {"text": "Thích làm việc ngoài trời, vận động tay chân", "type": "R"},
-        {"text": "Thích tìm hiểu, phân tích các vấn đề khoa học", "type": "I"},
-        {"text": "Thích giải các bài toán khó hoặc chơi cờ trí tuệ", "type": "I"},
-        {"text": "Thích vẽ tranh, chơi nhạc cụ hoặc viết lách", "type": "A"},
-        {"text": "Thích sáng tạo ý tưởng mới, không thích khuôn mẫu", "type": "A"},
-        {"text": "Thích lắng nghe và chia sẻ tâm tư với người khác", "type": "S"},
-        {"text": "Thích tham gia các hoạt động tình nguyện, cộng đồng", "type": "S"},
-        {"text": "Thích đứng trước đám đông thuyết trình", "type": "E"},
-        {"text": "Thích kinh doanh, bán hàng hoặc thuyết phục người khác", "type": "E"},
-        {"text": "Thích làm việc với các con số, sổ sách kế toán", "type": "C"},
-        {"text": "Thích sắp xếp mọi thứ ngăn nắp, có quy trình", "type": "C"}
-    ]
+# --- DỮ LIỆU CÂU HỎI ---
+def get_holland_detailed_questions():
+    return {
+        "R": [
+            "Tự mua và lắp ráp máy vi tính theo ý mình",
+            "Lắp ráp tủ theo hướng dẫn của sách hướng dẫn hoặc trang mạng",
+            "Trang điểm cho mình hay cho bạn theo hướng dẫn của sách hướng dẫn hoặc trang mạng",
+            "Cắt tỉa cây cảnh",
+            "Tháo mở điện thoại di động hay máy tính ra để tìm hiểu",
+            "Tham gia một chuyến du lịch thám hiểm (như khám phá hang động, núi rừng)",
+            "Chăm sóc vật nuôi",
+            "Sửa xe, như xe đạp, xe máy (các lỗi nhỏ)",
+            "Làm đồ nội thất",
+            "Lắp ráp máy vi tính",
+            "Leo núi",
+            "Đóng gói đồ đạc vào thùng",
+            "Chơi một môn thể thao",
+            "Tham gia chuyến đạp xe xuyên quốc gia (từ TPHCM ra Hà Nội, từ Hà Nội vào TPHCM)"
+        ],
+        "I": [
+            "Tham quan bảo tàng",
+            "Tìm hiểu sự hình thành của các vì sao và vũ trụ",
+            "Tìm hiểu về văn hóa một quốc gia mà mình thích",
+            "Tìm hiểu về tâm lý con người",
+            "Đọc một cuốn sách về tương lai của loài người trong một triệu năm nữa",
+            "Đọc sách, báo hay xem trang tin tức về khoa học",
+            "Tìm hiểu về cảm xúc con người",
+            "Được xem một ca mổ tim",
+            "Tìm hiểu nguồn gốc của một dịch bệnh, nguồn gốc loài người, v.v",
+            "Đọc các bài báo về ảnh hưởng của AI (trí tuệ nhân tạo) lên nghề nghiệp tương lai",
+            "Tìm hiểu về thế giới động vật (qua các kênh tìm hiểu khoa học)",
+            "Phát minh xe điện",
+            "Tiến hành thí nghiệm hóa học",
+            "Nghiên cứu về chế độ dinh dưỡng"
+        ],
+        "A": [
+            "Tạo ra một tác phẩm nghệ thuật, tranh, câu chuyện",
+            "Viết truyện ngắn",
+            "Chứng tỏ năng lực nghệ thuật của bản thân với người khác (nói lên suy nghĩ/quan điểm qua tác phẩm nghệ thuật)",
+            "Chơi trong một ban nhạc",
+            "Chỉnh sửa phim",
+            "Thuyết trình hoặc thiết kế, theo ý tưởng của mình",
+            "Vẽ phim hoạt hình",
+            "Hát trong một ban nhạc",
+            "Biểu diễn nhảy hiện đại",
+            "Dẫn chương trình (MC) cho một sự kiện",
+            "Độc thoại hay kể chuyện trên đài phát thanh/phần mềm",
+            "Viết kịch bản cho phim hoặc chương trình truyền hình",
+            "Chụp ảnh cho các sự kiện trong cuộc sống hoặc sự kiện nghệ thuật",
+            "Viết một bài phê bình phim cho bộ phim mình thích/ghét nhất"
+        ],
+        "S": [
+            "Giúp người khác chọn nghề nghiệp phù hợp",
+            "Kết nối hai người bạn với nhau",
+            "Dạy cho bạn mình cách giảm cân qua ăn uống đúng cách",
+            "Tham gia ngày trái đất bằng cách lượm rác hay tắt điện",
+            "Hướng dẫn khách nước ngoài chỗ ăn ngon",
+            "Cứu động vật bị bỏ rơi ngoài đường",
+            "Tham gia vào một cuộc thảo luận nhóm nhỏ",
+            "Kể chuyện cười cho bạn bè nghe",
+            "Dạy em nhỏ chơi một trò chơi hay một môn thể thao",
+            "Lắng nghe bạn bè tâm sự về vấn đề cá nhân của họ",
+            "Giúp bạn bè giải quyết vấn đề liên quan đến tình yêu",
+            "Tham gia một chuyến đi từ thiện",
+            "Giúp một dự án cộng đồng trong sức của mình",
+            "Sẵn sàng giúp thầy cô, bạn bè khi thấy họ cần"
+        ],
+        "E": [
+            "Tham gia ban đại diện học sinh ở trường",
+            "Làm cán bộ lớp",
+            "Bán hàng trực tuyến",
+            "Quản lý một cửa hàng trực tuyến",
+            "Học về thị trường chứng khoán (bitcoin, cổ phiếu, tiền tệ, v.v.)",
+            "Tham gia một khóa học về quản lý tài chính",
+            "Tham dự một trại huấn luyện kỹ năng lãnh đạo dành cho lứa tuổi thanh thiếu niên",
+            "Lập kế hoạch làm việc cho thành viên nhóm",
+            "Kiếm tiền bằng cách kinh doanh trực tuyến",
+            "Nói trước đám đông về một đề tài mình thích",
+            "Tham gia xây dựng các luật lệ mới cho lớp/trường",
+            "Thuyết phục cha mẹ theo ý mình",
+            "Tổ chức đi chơi cho một nhóm bạn",
+            "Kiếm tiền bằng cách làm thêm"
+        ],
+        "C": [
+            "Mở tài khoản tiết kiệm",
+            "Lập kế hoạch chi tiêu hàng tháng",
+            "Chuẩn bị ngân sách cho chuyến đi chơi tập thể lớp",
+            "Chuẩn bị cho buổi trình bày trước lớp",
+            "Lập kế hoạch cho kỳ nghỉ hè/Tết",
+            "Đếm và sắp xếp tiền",
+            "Sắp xếp lại bàn học",
+            "Viết kế hoạch học tập cho học kỳ mới",
+            "Hoàn tất bài tập theo đúng hạn được giao",
+            "Dò lỗi chính tả cho phụ đề của một phim ưa thích",
+            "Học một khóa vi tính văn phòng và biết cách sắp xếp văn bản, thư mục sao cho chỉn chu",
+            "Làm thủ quỹ cho lớp",
+            "Sắp xếp lại tủ quần áo cá nhân",
+            "Giúp ba/mẹ quản lý tiền chợ của gia đình (mua gì, mua khi nào, mua bao nhiêu)"
+        ]
+    }
 
-def get_big_five_questions():
-    return [
-        {"text": "Tôi là người thích giao tiếp và tràn đầy năng lượng.", "trait": "E", "reverse": False},
-        {"text": "Tôi thường hay lo lắng về những điều nhỏ nhặt.", "trait": "N", "reverse": False},
-        {"text": "Tôi có trí tưởng tượng phong phú và thích những ý tưởng mới.", "trait": "O", "reverse": False},
-        {"text": "Tôi thường quan tâm và đồng cảm với cảm xúc của người khác.", "trait": "A", "reverse": False},
-        {"text": "Tôi làm việc có kế hoạch và luôn hoàn thành nhiệm vụ đúng hạn.", "trait": "C", "reverse": False},
-        {"text": "Tôi thích sự yên tĩnh và ít nói khi ở chỗ đông người.", "trait": "E", "reverse": True},
-        {"text": "Tôi là người bình tĩnh, ít khi bị căng thẳng.", "trait": "N", "reverse": True},
-        {"text": "Tôi thích những thứ quen thuộc và thực tế hơn là trừu tượng.", "trait": "O", "reverse": True},
-        {"text": "Tôi đôi khi cảm thấy khó khăn để quan tâm đến vấn đề của người khác.", "trait": "A", "reverse": True},
-        {"text": "Tôi đôi khi hơi bừa bộn và làm việc ngẫu hứng.", "trait": "C", "reverse": True}
+def get_static_holland_questions():
+    # Placeholder for potential fallback, though detailed list is preferred
+    return get_holland_detailed_questions()
+
+# --- BỘ 120 CÂU HỎI BIG FIVE ---
+def get_big_five_120_questions():
+    # Chuỗi câu hỏi do người dùng cung cấp
+    raw_questions = [
+        "Tôi là người hay lo lắng.", "Tôi dễ dàng kết bạn với người khác.", "Tôi có trí tưởng tượng phong phú.", "Tôi tin tưởng người khác.", "Tôi thường hoàn thành công việc một cách hiệu quả.",
+        "Tôi dễ nổi giận.", "Tôi thực sự thích những buổi tiệc và các cuộc tụ họp đông người.", "Tôi cho rằng nghệ thuật là quan trọng.", "Đôi khi tôi lừa dối người khác để đạt được mục đích của mình.", "Tôi không thích sự bừa bộn – tôi thích mọi thứ gọn gàng, ngăn nắp.",
+        "Tôi thường cảm thấy buồn.", "Tôi thích nắm quyền chủ động trong các tình huống và sự kiện.", "Tôi trải nghiệm những cảm xúc sâu sắc và đa dạng.", "Tôi thích giúp đỡ người khác.", "Tôi luôn giữ lời hứa.",
+        "Tôi thấy khó khăn khi chủ động tiếp cận người khác.", "Tôi luôn bận rộn – lúc nào cũng trong trạng thái vận động.", "Tôi thích sự đa dạng hơn là lối sống lặp lại theo thói quen.", "Tôi thích tranh luận gay gắt hoặc đối đầu.", "Tôi làm việc rất chăm chỉ.",
+        "Đôi khi tôi nuông chiều bản thân quá mức.", "Tôi yêu thích sự kích thích và cảm giác mạnh.", "Tôi thích đọc những cuốn sách và bài viết mang tính thử thách trí tuệ.", "Tôi tin rằng mình giỏi hơn người khác.", "Tôi luôn chuẩn bị kỹ lưỡng cho mọi việc.",
+        "Tôi dễ hoảng loạn.", "Tôi là người vui vẻ, lạc quan.", "Tôi có xu hướng ủng hộ sự tiến bộ và cải cách.", "Tôi cảm thông với những người vô gia cư.", "Tôi rất bộc phát – thường hành động mà không suy nghĩ kỹ.",
+        "Tôi thường lo sợ những điều tồi tệ nhất sẽ xảy ra.", "Tôi cảm thấy thoải mái khi ở xung quanh người khác.", "Tôi thích những tưởng tượng bay bổng, táo bạo.", "Tôi tin rằng nhìn chung con người có những ý định tốt.", "Khi tôi làm việc gì, tôi luôn cố gắng làm thật tốt.",
+        "Tôi dễ bị cáu gắt.", "Trong các buổi tiệc, tôi thường trò chuyện với rất nhiều người khác nhau.", "Tôi nhìn thấy vẻ đẹp trong những điều mà người khác có thể không để ý.", "Tôi không ngại gian lận để tiến xa hơn.", "Tôi thường quên đặt đồ vật về đúng vị trí của chúng.",
+        "Đôi khi tôi không thích chính bản thân mình.", "Tôi cố gắng nắm quyền chủ động, dẫn dắt người khác.", "Tôi là người giàu sự đồng cảm – tôi cảm nhận được cảm xúc của người khác.", "Tôi quan tâm đến người khác.", "Tôi luôn nói sự thật.",
+        "Tôi ngại thu hút sự chú ý về phía mình.", "Tôi không bao giờ ngồi yên – lúc nào cũng vận động.", "Tôi thích gắn bó với những điều quen thuộc hơn là thử cái mới.", "Tôi quát mắng, la hét với người khác.", "Tôi làm nhiều hơn những gì được mong đợi ở mình.",
+        "Tôi hiếm khi nuông chiều bản thân quá mức.", "Tôi chủ động tìm kiếm những cuộc phiêu lưu.", "Tôi tránh các cuộc thảo luận mang tính triết học.", "Tôi đánh giá cao bản thân mình.", "Tôi hoàn thành công việc và thực hiện đúng kế hoạch đã đề ra.",
+        "Tôi dễ bị choáng ngợp bởi các sự kiện.", "Tôi có rất nhiều niềm vui trong cuộc sống.", "Tôi tin rằng không có đúng – sai tuyệt đối.", "Tôi cảm thấy thương cảm với những người kém may mắn hơn mình.", "Tôi thường đưa ra quyết định bốc đồng.",
+        "Tôi sợ nhiều thứ.", "Tôi tránh tiếp xúc với người khác nếu có thể.", "Tôi thích mơ mộng, suy tưởng.", "Tôi tin vào những gì người khác nói.", "Tôi xử lý công việc một cách có hệ thống.",
+        "Tôi thường xuyên nổi nóng.", "Tôi thích ở một mình.", "Tôi không thích thơ ca.", "Đôi khi tôi lợi dụng người khác.", "Đôi khi tôi để mọi thứ bừa bộn.",
+        "Đôi khi tôi cảm thấy chán nản, buồn bực.", "Tôi thường kiểm soát và làm chủ các tình huống.", "Tôi hiếm khi để ý đến phản ứng và cảm xúc của chính mình.", "Tôi thờ ơ với cảm xúc của người khác.", "Tôi phá vỡ các quy tắc.",
+        "Tôi chỉ thực sự cảm thấy thoải mái khi ở bên bạn bè.", "Tôi làm rất nhiều việc trong thời gian rảnh.", "Tôi không thích sự thay đổi.", "Tôi xúc phạm người khác.", "Tôi chỉ làm vừa đủ để hoàn thành yêu cầu.",
+        "Tôi dễ dàng kiểm soát những cám dỗ.", "Tôi thích mạo hiểm.", "Tôi gặp khó khăn khi hiểu các ý tưởng trừu tượng.", "Tôi có đánh giá cao về bản thân.", "Tôi lãng phí thời gian.",
+        "Tôi cảm thấy mình không đủ khả năng giải quyết mọi việc.", "Tôi yêu cuộc sống.", "Tôi tin rằng pháp luật cần được thực thi một cách nghiêm khắc.", "Tôi không quan tâm đến vấn đề của người khác.", "Tôi lao vào hành động quá nhanh.",
+        "Tôi thường cảm thấy lo lắng.", "Tôi dễ dàng kết bạn.", "Tôi có trí tưởng tượng phong phú.", "Tôi tin rằng hầu hết mọi người đều có ý tốt.", "Tôi hoàn thành công việc một cách cẩn thận.",
+        "Tôi dễ bị kích động, cáu gắt.", "Tôi không thích tụ tập đông người.", "Tôi yêu thích nghệ thuật.", "Tôi sẵn sàng lợi dụng người khác để đạt được mục tiêu.", "Tôi luôn giữ mọi thứ ngăn nắp, trật tự.",
+        "Tôi thường cảm thấy buồn bã.", "Tôi có khả năng dẫn dắt và gây ảnh hưởng đến người khác.", "Tôi nhạy cảm với cảm xúc của bản thân.", "Tôi quan tâm đến cảm xúc và nhu cầu của người khác.", "Tôi luôn tuân thủ các quy tắc.",
+        "Tôi cảm thấy thoải mái khi là trung tâm của sự chú ý.", "Tôi sống rất năng động.", "Tôi thích sự ổn định và quen thuộc.", "Tôi dễ làm tổn thương người khác bằng lời nói.", "Tôi luôn cố gắng làm nhiều hơn mức được yêu cầu.",
+        "Tôi có khả năng tự kiểm soát bản thân rất tốt.", "Tôi thích những trải nghiệm mới và mạo hiểm.", "Tôi hiểu tốt các ý tưởng phức tạp và trừu tượng.", "Tôi hài lòng với chính mình.", "Tôi sử dụng thời gian một cách hiệu quả.",
+        "Tôi tự tin vào khả năng giải quyết vấn đề của mình.", "Tôi cảm thấy hạnh phúc và lạc quan.", "Tôi tôn trọng luật pháp và các chuẩn mực xã hội.", "Tôi sẵn sàng giúp đỡ người khác khi họ gặp khó khăn.", "Tôi suy nghĩ kỹ trước khi hành động."
     ]
+    
+    # Quy tắc gán nhóm tính cách (Chu kỳ 5: N, E, O, A, C)
+    traits_order = ['N', 'E', 'O', 'A', 'C']
+    formatted_questions = []
+    
+    for i, text in enumerate(raw_questions):
+        trait = traits_order[i % 5]
+        formatted_questions.append({"text": text, "trait": trait})
+        
+    return formatted_questions
 
 def get_static_ikigai_questions():
     return [
@@ -337,7 +438,7 @@ elif st.session_state.page == 'welcome':
         if st.button("Gặp Chuyên gia"): switch_page('expert'); st.rerun()
     
     st.markdown("---")
-    st.markdown("<div style='text-align: center; color: #666;'>Sản phẩm thuộc về Câu lạc bộ hướng nghiệp Next Horizon - UK Academy</div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align: center; color: #666;'>Sản phẩm thuộc về Câu lạc bộ hướng nghiệp Next Horizon - UK Academy Hạ Long</div>", unsafe_allow_html=True)
 
 # --- HOLLAND ---
 elif st.session_state.page == 'holland':
@@ -356,13 +457,6 @@ elif st.session_state.page == 'holland':
             st.markdown("<div class='intro-text'><b>Mật mã Holland:</b> Trắc nghiệm Holland chính là cơ sở để bạn đối chiếu sở thích, năng lực tự nhiên của mình với yêu cầu của các nhóm ngành nghề.\n\nKết quả bài trắc nghiệm giúp bạn tìm ra ba kiểu tính cách của bạn tương ứng với 3 mật mã Holland.</div>", unsafe_allow_html=True)
             st.write("")
             if st.button("Bắt đầu trắc nghiệm Holland", type="primary"):
-                if api_key and not st.session_state.holland_questions_ai:
-                    with st.spinner("AI đang soạn thảo..."):
-                        q, is_ai = generate_questions_logic(api_key)
-                        st.session_state.holland_questions_ai = q
-                        st.session_state.is_ai_mode = is_ai
-                elif not st.session_state.holland_questions_ai:
-                     st.session_state.holland_questions_ai = get_static_holland_questions()
                 st.session_state.holland_step = 'intro'
                 st.rerun()
 
@@ -389,20 +483,46 @@ elif st.session_state.page == 'holland':
             if st.button("🏠 Trang chủ", key="hq_h", use_container_width=True): switch_page('welcome'); st.rerun()
         with n2:
             if st.button("⬅️ Quay lại", key="hq_b", use_container_width=True): st.session_state.holland_step='intro'; st.rerun()
-        questions = st.session_state.holland_questions_ai or get_static_holland_questions()
-        if st.session_state.is_ai_mode: st.success("✨ Câu hỏi AI")
-        st.progress(50)
-        with st.form("h_quiz"):
-            scores = {'R':0,'I':0,'A':0,'S':0,'E':0,'C':0}
-            for i, q in enumerate(questions):
-                st.markdown(f"<div class='quiz-container'><b>Câu {i+1}:</b> {q['text']}</div>", unsafe_allow_html=True)
-                ans = st.radio(f"Lựa chọn {i}", ["👎 Không thích", "😐 Trung lập", "👍 Rất thích"], key=f"h_{i}", horizontal=True, label_visibility="collapsed")
-                if ans == "👍 Rất thích": scores[q['type']] += 2
-                elif ans == "😐 Trung lập": scores[q['type']] += 1
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.form_submit_button("✅ HOÀN THÀNH", type="primary", use_container_width=True):
+        
+        st.progress(100)
+        # Sử dụng dictionary R, I, A, S, E, C
+        detailed_questions = get_holland_detailed_questions()
+        groups = {
+            "R": "Nhóm Kỹ thuật (Realistic)",
+            "I": "Nhóm Nghiên cứu (Investigative)",
+            "A": "Nhóm Nghệ thuật (Artistic)",
+            "S": "Nhóm Xã hội (Social)",
+            "E": "Nhóm Quản lý (Enterprising)",
+            "C": "Nhóm Nghiệp vụ (Conventional)"
+        }
+        
+        # Tạo Tabs cho 6 nhóm
+        tabs = st.tabs(list(groups.values()))
+        
+        # Lưu kết quả
+        map_h = {"Rất không thích": 1, "Không thích": 2, "Bình thường": 3, "Thích": 4, "Rất thích": 5}
+        options_h = list(map_h.keys())
+        
+        with st.form("holland_detailed_form"):
+            scores = {g: 0 for g in groups.keys()}
+            
+            # Duyệt qua từng tab tương ứng với từng nhóm
+            for i, group_code in enumerate(groups.keys()):
+                with tabs[i]:
+                    st.subheader(f"Câu hỏi cho {groups[group_code]}")
+                    st.caption("Nếu có đầy đủ cơ hội và nguồn lực, tôi...")
+                    
+                    group_questions = detailed_questions[group_code]
+                    for j, q_text in enumerate(group_questions):
+                        st.markdown(f"**{j+1}. {q_text}**")
+                        ans = st.radio(f"{group_code}_{j}", options_h, index=2, horizontal=True, key=f"h_{group_code}_{j}", label_visibility="collapsed")
+                        st.markdown("---")
+                        scores[group_code] += map_h[ans]
+            
+            if st.form_submit_button("✅ HOÀN THÀNH & XEM KẾT QUẢ", type="primary", use_container_width=True):
                 st.session_state.holland_scores = scores
-                st.session_state.holland_step = 'result'; st.rerun()
+                st.session_state.holland_step = 'result'
+                st.rerun()
 
     elif st.session_state.holland_step == 'result':
         # --- NAV BAR ---
@@ -411,12 +531,20 @@ elif st.session_state.page == 'holland':
             if st.button("🏠 Trang chủ", key="hr_h", use_container_width=True): switch_page('welcome'); st.rerun()
         with n2:
             if st.button("⬅️ Quay lại", key="hr_b", use_container_width=True): st.session_state.holland_step='landing'; st.rerun()
-        st.success("Kết quả phân tích:")
+        st.success("Kết quả phân tích Holland:")
         st.bar_chart(st.session_state.holland_scores)
         if api_key:
             with st.spinner("AI đang phân tích..."):
-                top = sorted(st.session_state.holland_scores.items(), key=lambda x:x[1], reverse=True)[0]
-                st.markdown(f"<div class='result-card'>{get_ai_response(f'Holland {top[0]}', api_key)}</div>", unsafe_allow_html=True)
+                # Sắp xếp lấy top nhóm cao điểm nhất
+                sorted_scores = sorted(st.session_state.holland_scores.items(), key=lambda x:x[1], reverse=True)
+                top_3 = ", ".join([f"{k} ({v} điểm)" for k, v in sorted_scores[:3]])
+                
+                prompt = f"""
+                Học sinh vừa hoàn thành bài trắc nghiệm Holland 6 nhóm (R-I-A-S-E-C).
+                Top 3 nhóm cao điểm nhất là: {top_3}.
+                Hãy phân tích ngắn gọn về đặc điểm nghề nghiệp của học sinh này và gợi ý 5 ngành nghề cụ thể phù hợp nhất tại Việt Nam.
+                """
+                st.markdown(f"<div class='result-card'>{get_ai_response(prompt, api_key)}</div>", unsafe_allow_html=True)
         if st.button("Làm lại"): st.session_state.holland_questions_ai=None; st.session_state.holland_step='landing'; st.rerun()
 
 # --- BIG FIVE ---
@@ -435,7 +563,7 @@ elif st.session_state.page == 'big_five':
             st.markdown("<h1 style='color: #004A8D;'>Khám phá tính cách BIG 5</h1>", unsafe_allow_html=True)
             st.markdown("<div class='intro-text'><b>Trắc nghiệm Big Five</b> (OCEAN) là công cụ đánh giá tâm lý học phổ biến, mô tả tính cách qua 5 nhóm đặc điểm:\n\n🌊 Cởi mở (Openness) | 🎯 Tận tâm (Conscientiousness) | 🗣️ Hướng ngoại (Extraversion) | 🤝 Dễ chịu (Agreeableness) | ⚡ Bất ổn cảm xúc (Neuroticism)</div>", unsafe_allow_html=True)
             st.write("")
-            if st.button("Bắt đầu bài kiểm tra BIG 5", type="primary"):
+            if st.button("Bắt đầu bài kiểm tra BIG 5 (120 câu)", type="primary"):
                 st.session_state.big_five_step = 'intro'; st.rerun()
 
     elif st.session_state.big_five_step == 'intro':
@@ -446,12 +574,15 @@ elif st.session_state.page == 'big_five':
         with n2:
             if st.button("⬅️ Quay lại", key="bi_b", use_container_width=True): st.session_state.big_five_step='landing'; st.rerun()
         st.markdown("<h2 style='text-align: center;'>Hướng dẫn</h2>", unsafe_allow_html=True)
-        c1, c2, c3 = st.columns([1, 2, 1])
-        with c2:
-            st.markdown("<div style='background-color: white; padding: 30px; border-radius: 15px; text-align: center;'><p>Chọn giới tính:</p></div>", unsafe_allow_html=True)
-            st.radio("Giới tính", ["Nam", "Nữ"], horizontal=True, label_visibility="collapsed")
-            if st.button("Bắt đầu ngay ➡️", type="primary", use_container_width=True):
-                st.session_state.big_five_step = 'quiz'; st.rerun()
+        st.markdown("""
+        <div class='intro-text'>
+        Đây là bài trắc nghiệm chuyên sâu gồm <b>120 câu hỏi</b>.
+        <br>⏱️ Thời gian dự kiến: 15-20 phút.
+        <br>💡 Hãy trả lời trung thực nhất với con người hiện tại của bạn.
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Bắt đầu ngay ➡️", type="primary", use_container_width=True):
+            st.session_state.big_five_step = 'quiz'; st.rerun()
 
     elif st.session_state.big_five_step == 'quiz':
         # --- NAV BAR ---
@@ -460,17 +591,26 @@ elif st.session_state.page == 'big_five':
             if st.button("🏠 Trang chủ", key="bq_h", use_container_width=True): switch_page('welcome'); st.rerun()
         with n2:
             if st.button("⬅️ Quay lại", key="bq_b", use_container_width=True): st.session_state.big_five_step='intro'; st.rerun()
-        st.progress(50)
-        with st.form("b_quiz"):
-            qs = get_big_five_questions()
-            scores = {'O':0,'C':0,'E':0,'A':0,'N':0}
-            map_s = {"🔴 Rất sai":1, "🟠 Sai":2, "⚪ Trung lập":3, "🟢 Đúng":4, "🔵 Rất đúng":5}
-            for i, q in enumerate(qs):
-                st.markdown(f"<div class='quiz-container'>{q['text']}</div>", unsafe_allow_html=True)
-                ans = st.radio(f"b{i}", list(map_s.keys()), index=2, key=f"b_{i}", horizontal=True, label_visibility="collapsed")
-                raw = map_s[ans]
-                scores[q['trait']] += (6-raw if q['reverse'] else raw)
-            if st.form_submit_button("✅ HOÀN THÀNH", type="primary", use_container_width=True):
+        
+        st.progress(100)
+        st.caption("Hãy chọn mức độ đồng ý của bạn với từng câu:")
+        
+        questions = get_big_five_120_questions()
+        map_s = {"Hoàn toàn không đồng ý": 1, "Không đồng ý": 2, "Trung lập": 3, "Đồng ý": 4, "Hoàn toàn đồng ý": 5}
+        options = list(map_s.keys())
+        
+        with st.form("b_quiz_120"):
+            scores = {'O':0, 'C':0, 'E':0, 'A':0, 'N':0}
+            
+            # Hiển thị 120 câu hỏi
+            for i, q in enumerate(questions):
+                st.markdown(f"**{i+1}. {q['text']}**")
+                ans = st.radio(f"q_{i}", options, index=2, horizontal=True, key=f"bf_{i}", label_visibility="collapsed")
+                st.markdown("---")
+                # Cộng điểm thô (để AI xử lý sau)
+                scores[q['trait']] += map_s[ans]
+            
+            if st.form_submit_button("✅ HOÀN THÀNH & XEM KẾT QUẢ", type="primary", use_container_width=True):
                 st.session_state.big_five_scores = scores
                 st.session_state.big_five_step = 'result'; st.rerun()
 
@@ -482,8 +622,28 @@ elif st.session_state.page == 'big_five':
         with n2:
             if st.button("⬅️ Quay lại", key="br_b", use_container_width=True): st.session_state.big_five_step='landing'; st.rerun()
         st.balloons()
-        st.success("Kết quả Big Five:")
+        st.success("Kết quả Big Five (IPIP-NEO-120):")
         st.bar_chart(st.session_state.big_five_scores)
+        
+        # Gửi điểm số thô cho AI phân tích
+        if api_key:
+            with st.spinner("Chuyên gia AI đang phân tích hồ sơ tính cách chi tiết..."):
+                prompt = f"""
+                Tôi vừa hoàn thành bài trắc nghiệm Big Five 120 câu (IPIP-NEO-120).
+                Tổng điểm thô của tôi cho từng nhóm (Range mỗi nhóm: 24 - 120 điểm):
+                - Neuroticism (N): {st.session_state.big_five_scores['N']}
+                - Extraversion (E): {st.session_state.big_five_scores['E']}
+                - Openness (O): {st.session_state.big_five_scores['O']}
+                - Agreeableness (A): {st.session_state.big_five_scores['A']}
+                - Conscientiousness (C): {st.session_state.big_five_scores['C']}
+                
+                Hãy đóng vai chuyên gia tâm lý, phân tích chi tiết tính cách của tôi dựa trên điểm số này. 
+                Đưa ra lời khuyên về điểm mạnh, điểm yếu và môi trường làm việc phù hợp.
+                """
+                res = get_ai_response(prompt, api_key)
+                if res: st.markdown(f"<div class='result-card'>{res}</div>", unsafe_allow_html=True)
+                else: st.error("Không thể kết nối AI. Vui lòng kiểm tra API Key.")
+        
         if st.button("Làm lại"): st.session_state.big_five_step='landing'; st.rerun()
 
 # --- IKIGAI ---
