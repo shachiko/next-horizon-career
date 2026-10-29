@@ -738,24 +738,15 @@ elif st.session_state.page == 'expert':
     
     # Đã xóa dòng st.markdown("---") ở đây để bỏ thanh gạch ngang vô duyên
 
-    # 3 CỘT CHUYÊN GIA (KHÔI PHỤC LẠI ĐẦY ĐỦ)
-    ec1, ec2, ec3 = st.columns(3)
+    # 2 CỘT CHUYÊN GIA
+    ec1, ec2 = st.columns(2)
     with ec1:
-        #st.markdown('<div class="result-card" style="height: 100%;">', unsafe_allow_html=True)
-        if os.path.exists("nguyen_van_thanh.jpg"): st.image("nguyen_van_thanh.jpg", use_container_width=True)
-        st.markdown("### TS. Nguyễn Văn Thanh\nChuyên gia tư vấn hướng nghiệp\n* SĐT: 0916.272.424\n* Email: nvthanh183@gmail.com")
-        #st.markdown('</div>', unsafe_allow_html=True)
-    with ec2:
-        #st.markdown('<div class="result-card" style="height: 100%; border-left: 5px solid #2e7d32;">', unsafe_allow_html=True)
         if os.path.exists("vu_viet_anh.jpg"): st.image("vu_viet_anh.jpg", use_container_width=True)
         elif os.path.exists("vuvietanh.jpg"): st.image("vuvietanh.jpg", use_container_width=True)
         st.markdown("### TS. Vũ Việt Anh\nChuyên gia định hướng nghề nghiệp\nChủ tịch HĐ Cố vấn EDA INSTITUTE\n* SĐT: 098 4736999")
-        #st.markdown('</div>', unsafe_allow_html=True)
-    with ec3:
-        #st.markdown('<div class="result-card" style="height: 100%;">', unsafe_allow_html=True)
+    with ec2:
         if os.path.exists("pham_cong_thanh.jpg"): st.image("pham_cong_thanh.jpg", use_container_width=True)
         st.markdown("### ThS. Phạm Công Thành\nChuyên gia định hướng nghề nghiệp\n* SĐT: 038.7315.722\n* Email: phamcongthanh92@gmail.com")
-        #st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("---")
     st.link_button("💬 Chat ngay qua Messenger", "https://www.facebook.com/messages/t/100001857808197", use_container_width=True)
