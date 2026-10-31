@@ -21,6 +21,7 @@ jobs:
         run: |
           # Dùng lệnh curl để gửi tín hiệu đến web
           # QUAN TRỌNG: Thay link bên dưới bằng link app của bạn
-          curl -I https://nexthorizon-ukhalong.streamlit.app/
+          curl -I -s https://next-horizon-career.onrender.com/ || true
+          curl -I -s https://www.nexthorizon.world/ || true
           
           echo "Đã ping thành công - Web vẫn sống!"

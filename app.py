@@ -137,7 +137,8 @@ def switch_page(page_name):
     if page_name == 'ikigai': st.session_state.ikigai_step = 'landing'
 
 def verify_code():
-    if st.session_state.input_code.strip().upper() == "NEXT2025": 
+    code = st.session_state.input_code.strip().upper() if "input_code" in st.session_state else ""
+    if code in ["NEXT2025", "NEXT2026"]: 
         st.session_state.authenticated = True
         st.session_state.auth_error = ""
     else:
@@ -147,22 +148,34 @@ def render_image_safe(image_name, width=None):
     if os.path.exists(image_name):
         st.image(image_name, width=width)
 
-api_key = st.secrets.get("GEMINI_API_KEY", None)
+# Lấy API Key an toàn từ biến môi trường (Render/OS) hoặc Streamlit secrets, tránh crash nếu không có secrets.toml
+api_key = os.environ.get("GEMINI_API_KEY", None)
+if not api_key:
+    try:
+        if hasattr(st, "secrets") and "GEMINI_API_KEY" in st.secrets:
+            api_key = st.secrets["GEMINI_API_KEY"]
+    except Exception:
+        api_key = None
+if not api_key and "api_key" in st.session_state:
+    api_key = st.session_state["api_key"]
 
 def get_ai_response(prompt, api_key_val=None):
     key_to_use = api_key_val if api_key_val else api_key
     if not key_to_use: return None
     try:
         genai.configure(api_key=key_to_use)
-        models_to_try = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-pro']
+        models_to_try = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro']
         for model_name in models_to_try:
             try:
                 model = genai.GenerativeModel(model_name)
                 response = model.generate_content(prompt)
-                return response.text
-            except: continue
+                if response and hasattr(response, 'text') and response.text:
+                    return response.text
+            except Exception:
+                continue
         return None
-    except: return None
+    except Exception:
+        return None
 
 def generate_questions_logic(api_key_val):
     if not api_key_val: return get_static_holland_questions(), False
@@ -353,7 +366,10 @@ with st.sidebar:
     st.markdown('<div class="sidebar-title">🚀 Next Horizon</div>', unsafe_allow_html=True)
     
     if not api_key:
-        api_key = st.text_input("🔑 Nhập API Key:", type="password")
+        user_key = st.text_input("🔑 Nhập API Key:", type="password", key="user_api_key_input", help="Nhập Gemini API Key để kích hoạt tính năng AI")
+        if user_key:
+            api_key = user_key
+            st.session_state["api_key"] = user_key
     
     st.markdown("---")
     if st.session_state.authenticated:
@@ -383,7 +399,10 @@ if not st.session_state.authenticated:
     st.markdown("<br>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns([1,2,1])
     with c2:
-        render_image_safe("login.png", width=150)
+        if os.path.exists("login_icon.png"):
+            render_image_safe("login_icon.png", width=150)
+        elif os.path.exists("login.png"):
+            render_image_safe("login.png", width=150)
         st.markdown("<h2 style='text-align: center; color: #004A8D;'>CỔNG ĐĂNG NHẬP</h2>", unsafe_allow_html=True)
         st.info("Chào mừng bạn đến với Ứng dụng Hướng nghiệp Next Horizon")
         st.markdown("""
@@ -394,6 +413,10 @@ if not st.session_state.authenticated:
         </div>
         """, unsafe_allow_html=True)
         st.text_input("Mời bạn nhập mã xác nhận vào đây:", key="input_code", on_change=verify_code, type="password")
+        if st.button("Đăng nhập 🚀", type="primary", use_container_width=True):
+            verify_code()
+            if st.session_state.authenticated:
+                st.rerun()
         if st.session_state.auth_error: st.error(st.session_state.auth_error)
 
 # --- WELCOME ---
@@ -544,7 +567,13 @@ elif st.session_state.page == 'holland':
                 Top 3 nhóm cao điểm nhất là: {top_3}.
                 Hãy phân tích ngắn gọn về đặc điểm nghề nghiệp của học sinh này và gợi ý 5 ngành nghề cụ thể phù hợp nhất tại Việt Nam.
                 """
-                st.markdown(f"<div class='result-card'>{get_ai_response(prompt, api_key)}</div>", unsafe_allow_html=True)
+                ai_res = get_ai_response(prompt, api_key)
+                if ai_res:
+                    st.markdown(f"<div class='result-card'>{ai_res}</div>", unsafe_allow_html=True)
+                else:
+                    st.warning("⚠️ Không thể kết nối với AI để phân tích. Vui lòng kiểm tra lại API Key hoặc thử lại sau.")
+        else:
+            st.info("💡 Bạn có thể nhập Gemini API Key ở menu bên trái để nhận gợi ý nghề nghiệp chuyên sâu từ AI.")
         if st.button("Làm lại"): st.session_state.holland_questions_ai=None; st.session_state.holland_step='landing'; st.rerun()
 
 # --- BIG FIVE ---
@@ -642,7 +671,9 @@ elif st.session_state.page == 'big_five':
                 """
                 res = get_ai_response(prompt, api_key)
                 if res: st.markdown(f"<div class='result-card'>{res}</div>", unsafe_allow_html=True)
-                else: st.error("Không thể kết nối AI. Vui lòng kiểm tra API Key.")
+                else: st.error("Không thể kết nối AI. Vui lòng kiểm tra lại API Key.")
+        else:
+            st.info("💡 Bạn có thể nhập Gemini API Key ở menu bên trái để nhận phân tích tính cách chuyên sâu từ AI.")
         
         if st.button("Làm lại"): st.session_state.big_five_step='landing'; st.rerun()
 
@@ -721,6 +752,24 @@ elif st.session_state.page == 'ikigai':
         st.balloons()
         st.success("Biểu đồ Ikigai:")
         st.bar_chart(st.session_state.ikigai_scores)
+        if api_key:
+            with st.spinner("AI đang phân tích lẽ sống Ikigai của bạn..."):
+                prompt = f"""
+                Học sinh vừa hoàn thành bài trắc nghiệm Ikigai với điểm số từng trụ cột (thang điểm 10):
+                - Đam mê (Yêu thích - Love): {st.session_state.ikigai_scores.get('Love', 0):.1f}/10
+                - Sở trường (Giỏi - Good): {st.session_state.ikigai_scores.get('Good', 0):.1f}/10
+                - Nhu cầu xã hội (Thế giới cần - World): {st.session_state.ikigai_scores.get('World', 0):.1f}/10
+                - Thu nhập (Được trả tiền - Paid): {st.session_state.ikigai_scores.get('Paid', 0):.1f}/10
+                
+                Hãy đóng vai chuyên gia hướng nghiệp, phân tích ngắn gọn điểm giao thoa và đưa ra lời khuyên giúp học sinh cân bằng các yếu tố này để tìm được Ikigai nghề nghiệp của mình.
+                """
+                ai_res = get_ai_response(prompt, api_key)
+                if ai_res:
+                    st.markdown(f"<div class='result-card'>{ai_res}</div>", unsafe_allow_html=True)
+                else:
+                    st.warning("⚠️ Không thể kết nối với AI. Vui lòng kiểm tra lại API Key.")
+        else:
+            st.info("💡 Bạn có thể nhập Gemini API Key ở menu bên trái để nhận phân tích Ikigai từ AI.")
         if st.button("Làm lại"): st.session_state.ikigai_questions_ai=None; st.session_state.ikigai_step='landing'; st.rerun()
 
 # --- EXPERT ---
@@ -762,13 +811,23 @@ elif st.session_state.page == 'chat':
         
     st.header("🤖 Chat AI")
     for m in st.session_state.chat_history: st.chat_message(m["role"]).write(m["content"])
-    if p := st.chat_input("Hỏi tôi..."):
+    if p := st.chat_input("Hỏi tôi bất cứ điều gì về định hướng nghề nghiệp..."):
         st.session_state.chat_history.append({"role":"user","content":p})
         st.chat_message("user").write(p)
         if api_key:
-            res = get_ai_response(p, api_key)
-            st.session_state.chat_history.append({"role":"assistant","content":res})
-            st.chat_message("assistant").write(res)
+            with st.spinner("Trợ lý AI đang suy nghĩ..."):
+                res = get_ai_response(p, api_key)
+            if res:
+                st.session_state.chat_history.append({"role":"assistant","content":res})
+                st.chat_message("assistant").write(res)
+            else:
+                err = "Xin lỗi, hiện tại tôi không thể kết nối tới máy chủ AI. Vui lòng kiểm tra lại API Key hoặc thử lại sau."
+                st.session_state.chat_history.append({"role":"assistant","content":err})
+                st.chat_message("assistant").write(err)
+        else:
+            notice = "💡 Vui lòng nhập Gemini API Key ở thanh menu bên trái để trò chuyện cùng trợ lý AI."
+            st.session_state.chat_history.append({"role":"assistant","content":notice})
+            st.chat_message("assistant").write(notice)
 
 # --- REPORT ---
 elif st.session_state.page == 'report':
@@ -781,9 +840,36 @@ elif st.session_state.page == 'report':
         
     st.header("📊 Báo cáo Tổng hợp")
     c1,c2,c3 = st.columns(3)
-    with c1: st.write("Holland"); st.bar_chart(st.session_state.holland_scores)
-    with c2: st.write("Big Five"); st.bar_chart(st.session_state.big_five_scores)
-    with c3: st.write("Ikigai"); st.bar_chart(st.session_state.ikigai_scores)
+    with c1:
+        st.subheader("🧩 Holland")
+        if st.session_state.holland_scores: st.bar_chart(st.session_state.holland_scores)
+        else: st.info("Chưa làm bài trắc nghiệm")
+    with c2:
+        st.subheader("🧠 Big Five")
+        if st.session_state.big_five_scores: st.bar_chart(st.session_state.big_five_scores)
+        else: st.info("Chưa làm bài trắc nghiệm")
+    with c3:
+        st.subheader("🎯 Ikigai")
+        if st.session_state.ikigai_scores: st.bar_chart(st.session_state.ikigai_scores)
+        else: st.info("Chưa làm bài trắc nghiệm")
+        
+    has_results = bool(st.session_state.holland_scores or st.session_state.big_five_scores or st.session_state.ikigai_scores)
+    if has_results:
+        st.markdown("---")
+        if st.button("📄 Phân tích tổng hợp bằng AI", type="primary"):
+            if api_key:
+                with st.spinner("AI đang tổng hợp và phân tích hồ sơ..."):
+                    h_val = st.session_state.holland_scores or "Chưa làm"
+                    b_val = st.session_state.big_five_scores or "Chưa làm"
+                    i_val = st.session_state.ikigai_scores or "Chưa làm"
+                    p = f"Tổng hợp hồ sơ học sinh: Holland={h_val}, BigFive={b_val}, Ikigai={i_val}. Phân tích điểm mạnh cốt lõi, môi trường làm việc phù hợp nhất và top 3 nghề nghiệp lý tưởng tại Việt Nam."
+                    res = get_ai_response(p, api_key)
+                    if res:
+                        st.markdown(f"<div class='result-card'>{res}</div>", unsafe_allow_html=True)
+                    else:
+                        st.error("Không thể kết nối AI.")
+            else:
+                st.warning("Vui lòng nhập API Key ở menu bên trái để AI phân tích tổng hợp.")
 
 # --- SEARCH & ROADMAP ---
 elif st.session_state.page == 'search':
@@ -796,9 +882,17 @@ elif st.session_state.page == 'search':
         
     render_image_safe("search.png", 100)
     st.header("Tìm kiếm Ngành nghề")
-    q = st.text_input("Nhập ngành:")
-    if q and st.button("Tìm kiếm"):
-        if api_key: st.markdown(get_ai_response(f"Thông tin ngành {q} ở VN", api_key))
+    q = st.text_input("Nhập ngành nghề bạn quan tâm:")
+    if q and st.button("Tìm kiếm 🔍", type="primary"):
+        if api_key:
+            with st.spinner("Đang tra cứu thông tin ngành nghề..."):
+                res = get_ai_response(f"Thông tin chi tiết về ngành {q} ở Việt Nam: tổng quan ngành, cơ hội việc làm, các trường đại học đào tạo uy tín, tổ hợp môn xét tuyển và mức thu nhập tham khảo.", api_key)
+                if res:
+                    st.markdown(f"<div class='result-card'>{res}</div>", unsafe_allow_html=True)
+                else:
+                    st.error("Không thể kết nối với AI. Vui lòng kiểm tra lại API Key.")
+        else:
+            st.warning("Vui lòng nhập Gemini API Key ở menu bên trái để tra cứu AI.")
 elif st.session_state.page == 'roadmap':
     # --- NAV BAR ---
     n1, n2 = st.columns(2)
@@ -809,8 +903,30 @@ elif st.session_state.page == 'roadmap':
         
     render_image_safe("roadmap.png", 100)
     st.header("Lộ trình phát triển")
-    if st.button("Lập lộ trình AI") and api_key:
-        st.markdown(get_ai_response(f"Lộ trình phát triển cho Holland={st.session_state.holland_scores}", api_key))
+    if st.button("Lập lộ trình AI 🚀", type="primary"):
+        if api_key:
+            with st.spinner("Chuyên gia AI đang lập lộ trình cá nhân hóa..."):
+                holland_info = str(st.session_state.holland_scores) if st.session_state.holland_scores else "Chưa làm trắc nghiệm Holland"
+                bigfive_info = str(st.session_state.big_five_scores) if st.session_state.big_five_scores else "Chưa làm trắc nghiệm Big Five"
+                ikigai_info = str(st.session_state.ikigai_scores) if st.session_state.ikigai_scores else "Chưa làm trắc nghiệm Ikigai"
+                prompt = f"""
+                Hãy đóng vai chuyên gia định hướng nghề nghiệp, xây dựng một Lộ trình phát triển bản thân (Roadmap) chi tiết cho học sinh THPT dựa trên các kết quả đánh giá:
+                - Kết quả Holland: {holland_info}
+                - Kết quả Big Five: {bigfive_info}
+                - Kết quả Ikigai: {ikigai_info}
+                
+                Lộ trình gồm các giai đoạn rõ ràng:
+                1. Giai đoạn lớp 10-11: Rèn luyện kỹ năng, khám phá sở thích, hoạt động ngoại khóa.
+                2. Giai đoạn lớp 12: Chọn ngành, chọn khối thi và trường đại học mục tiêu.
+                3. Giai đoạn Đại học: Xây dựng kỹ năng chuyên môn, thực tập và định hình sự nghiệp.
+                """
+                res = get_ai_response(prompt, api_key)
+                if res:
+                    st.markdown(f"<div class='result-card'>{res}</div>", unsafe_allow_html=True)
+                else:
+                    st.error("Không thể kết nối với AI. Vui lòng kiểm tra lại API Key.")
+        else:
+            st.warning("Vui lòng nhập Gemini API Key ở menu bên trái để lập lộ trình AI.")
 
 # --- FOOTER ---
 st.markdown("---")
